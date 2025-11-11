@@ -27,7 +27,8 @@ window.venueLinks = {};
 
 // DOM elements - will be initialized after DOM is ready
 let loading, error, tableViewBtn, calendarViewBtn, tableView, calendarView;
-let filterDateFrom, filterDateTo, filterArtist, filterGenre, filterVenue, filterPromoter, clearFiltersBtn;
+let filterDateFrom, filterDateTo, filterGenre, filterVenue, clearFiltersBtn, toggleFiltersBtn, filtersContainer;
+let allGigsTab, myListTab, myListPane;
 
 // Debounce timer for live filtering
 let filterDebounceTimer = null;
@@ -44,19 +45,22 @@ function initDOMElements() {
     // Filter inputs
     filterDateFrom = document.getElementById('filterDateFrom');
     filterDateTo = document.getElementById('filterDateTo');
-    filterArtist = document.getElementById('filterArtist');
     filterGenre = document.getElementById('filterGenre');
     filterVenue = document.getElementById('filterVenue');
-    filterPromoter = document.getElementById('filterPromoter');
     clearFiltersBtn = document.getElementById('clearFilters');
+    toggleFiltersBtn = document.getElementById('toggleFilters');
+    filtersContainer = document.getElementById('filtersContainer');
+    
+    // Tabs
+    allGigsTab = document.getElementById('allGigsTab');
+    myListTab = document.getElementById('myListTab');
+    myListPane = document.getElementById('myListPane');
     
     console.log('DOM elements initialized:', {
         filterDateFrom: !!filterDateFrom,
         filterDateTo: !!filterDateTo,
-        filterArtist: !!filterArtist,
         filterGenre: !!filterGenre,
         filterVenue: !!filterVenue,
-        filterPromoter: !!filterPromoter,
         tableViewBtn: !!tableViewBtn,
         calendarViewBtn: !!calendarViewBtn
     });
@@ -85,10 +89,6 @@ function setupEventListeners() {
         filterDateTo.addEventListener('change', applyFilters);
         console.log('Date To filter listener added');
     }
-    if (filterArtist) {
-        filterArtist.addEventListener('input', debounceFilter);
-        console.log('Artist filter listener added');
-    }
     if (filterGenre) {
         filterGenre.addEventListener('input', debounceFilter);
         console.log('Genre filter listener added');
@@ -97,15 +97,25 @@ function setupEventListeners() {
         filterVenue.addEventListener('input', debounceFilter);
         console.log('Venue filter listener added');
     }
-    if (filterPromoter) {
-        filterPromoter.addEventListener('input', debounceFilter);
-        console.log('Promoter filter listener added');
+    
+    // Filter toggle button
+    if (toggleFiltersBtn) {
+        toggleFiltersBtn.addEventListener('click', toggleFilters);
+        console.log('Toggle filters button listener added');
     }
     
     // Clear filters button
     if (clearFiltersBtn) {
         clearFiltersBtn.addEventListener('click', clearFilters);
         console.log('Clear filters button listener added');
+    }
+    
+    // Tab buttons
+    if (allGigsTab) {
+        allGigsTab.addEventListener('click', () => switchTab('allGigs'));
+    }
+    if (myListTab) {
+        myListTab.addEventListener('click', () => switchTab('myList'));
     }
 }
 
@@ -433,10 +443,8 @@ function applyFilters() {
     // Get filter values safely
     const dateFromValue = filterDateFrom ? filterDateFrom.value : '';
     const dateToValue = filterDateTo ? filterDateTo.value : '';
-    const artistValue = filterArtist ? filterArtist.value.trim() : '';
     const genreValue = filterGenre ? filterGenre.value.trim() : '';
     const venueValue = filterVenue ? filterVenue.value.trim() : '';
-    const promoterValue = filterPromoter ? filterPromoter.value.trim() : '';
     
     window.filteredConcerts = window.allConcerts.filter(concert => {
         // Date range filter
@@ -465,13 +473,6 @@ function applyFilters() {
             }
         }
 
-        // Artist filter
-        if (artistValue && concert.artist) {
-            if (!concert.artist.toLowerCase().includes(artistValue.toLowerCase())) {
-                return false;
-            }
-        }
-
         // Genre filter
         if (genreValue && concert.genre) {
             if (!concert.genre.toLowerCase().includes(genreValue.toLowerCase())) {
@@ -482,13 +483,6 @@ function applyFilters() {
         // Venue filter
         if (venueValue && concert.venue) {
             if (!concert.venue.toLowerCase().includes(venueValue.toLowerCase())) {
-                return false;
-            }
-        }
-
-        // Promoter filter
-        if (promoterValue && concert.promoter) {
-            if (!concert.promoter.toLowerCase().includes(promoterValue.toLowerCase())) {
                 return false;
             }
         }
@@ -511,16 +505,54 @@ function applyFilters() {
 }
 
 /**
+ * Toggle filters visibility
+ */
+function toggleFilters() {
+    if (filtersContainer) {
+        filtersContainer.classList.toggle('show');
+        const icon = document.getElementById('filterToggleIcon');
+        if (icon) {
+            if (filtersContainer.classList.contains('show')) {
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+    }
+}
+
+/**
  * Clear all filters
  */
 function clearFilters() {
     if (filterDateFrom) filterDateFrom.value = '';
     if (filterDateTo) filterDateTo.value = '';
-    if (filterArtist) filterArtist.value = '';
     if (filterGenre) filterGenre.value = '';
     if (filterVenue) filterVenue.value = '';
-    if (filterPromoter) filterPromoter.value = '';
     applyFilters();
+}
+
+/**
+ * Switch between All Gigs and My List tabs
+ */
+function switchTab(tab) {
+    if (tab === 'allGigs') {
+        if (allGigsTab) allGigsTab.classList.add('active');
+        if (myListTab) myListTab.classList.remove('active');
+        if (myListPane) myListPane.style.display = 'none';
+        if (tableView) tableView.style.display = 'block';
+        if (calendarView) calendarView.style.display = calendarView.classList.contains('active') ? 'block' : 'none';
+    } else if (tab === 'myList') {
+        if (allGigsTab) allGigsTab.classList.remove('active');
+        if (myListTab) myListTab.classList.add('active');
+        if (myListPane) myListPane.style.display = 'block';
+        if (tableView) tableView.style.display = 'none';
+        if (calendarView) calendarView.style.display = 'none';
+        // Update My List display
+        if (typeof renderMyList === 'function') {
+            renderMyList();
+        }
+    }
 }
 
 // ============================================

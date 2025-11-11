@@ -8,7 +8,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Rock+Salt&family=Oswald:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -22,7 +22,6 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="noise-overlay"></div>
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo-section">
@@ -51,7 +50,16 @@
     <main class="main-content">
         <!-- Filters Section -->
         <section class="filters-section">
-            <div class="filters-container">
+            <div class="filters-header">
+                <button id="toggleFilters" class="toggle-filters-btn">
+                    <i class="fas fa-filter"></i> Filters
+                    <i class="fas fa-chevron-down" id="filterToggleIcon"></i>
+                </button>
+                <button id="clearFilters" class="clear-filters-btn" title="Clear all filters">
+                    <i class="fas fa-times"></i> Reset
+                </button>
+            </div>
+            <div class="filters-container" id="filtersContainer">
                 <div class="filter-group">
                     <label for="filterDateFrom"><i class="fas fa-calendar-alt"></i> Date From:</label>
                     <input type="date" id="filterDateFrom" class="filter-input">
@@ -61,10 +69,6 @@
                     <input type="date" id="filterDateTo" class="filter-input">
                 </div>
                 <div class="filter-group">
-                    <label for="filterArtist"><i class="fas fa-microphone"></i> Artist/Event:</label>
-                    <input type="text" id="filterArtist" class="filter-input" placeholder="Search...">
-                </div>
-                <div class="filter-group">
                     <label for="filterGenre"><i class="fas fa-music"></i> Genre:</label>
                     <input type="text" id="filterGenre" class="filter-input" placeholder="Search...">
                 </div>
@@ -72,20 +76,32 @@
                     <label for="filterVenue"><i class="fas fa-building"></i> Venue:</label>
                     <input type="text" id="filterVenue" class="filter-input" placeholder="Search...">
                 </div>
-                <div class="filter-group">
-                    <label for="filterPromoter"><i class="fas fa-ticket-alt"></i> Promoter:</label>
-                    <input type="text" id="filterPromoter" class="filter-input" placeholder="Search...">
-                </div>
-                <div class="filter-group filter-clear">
-                    <button id="clearFilters" class="clear-btn-icon" title="Clear all filters">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
             </div>
-            <div class="filters-actions">
-                <button id="createListBtn" class="create-list-btn">
-                    <i class="fas fa-list"></i> Create New List
+        </section>
+
+        <!-- Tabs Section -->
+        <section class="tabs-section">
+            <div class="tabs">
+                <button id="allGigsTab" class="tab-btn active">
+                    <i class="fas fa-calendar-alt"></i> All Gigs
                 </button>
+                <button id="myListTab" class="tab-btn">
+                    <i class="fas fa-list"></i> My List
+                    <span id="myListCount" class="list-count">0</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- My List Sidepane -->
+        <section id="myListPane" class="my-list-pane" style="display: none;">
+            <div class="my-list-header">
+                <h3><i class="fas fa-list"></i> My List</h3>
+                <button id="exportMyListICS" class="export-my-list-btn">
+                    <i class="fas fa-download"></i> Export to ICS
+                </button>
+            </div>
+            <div id="myListContent" class="my-list-content">
+                <p class="empty-list-message">No events in your list yet. Select events from All Gigs to add them here.</p>
             </div>
         </section>
 
@@ -189,6 +205,7 @@
     <script src="js/table.js"></script>
     <script src="js/facebook-api.js"></script>
     <script src="js/calendar.js"></script>
+    <script src="js/mylist.js"></script>
     <script src="js/list.js"></script>
 </body>
 </html>

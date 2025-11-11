@@ -31,9 +31,32 @@ function renderTableView() {
     });
 
     // Populate table
-    sortedConcerts.forEach(concert => {
+    sortedConcerts.forEach((concert, index) => {
         const genreColor = getGenreColor(concert.genre);
         const row = document.createElement('tr');
+        
+        // Checkbox for My List
+        const isInList = typeof isInMyList === 'function' ? isInMyList(concert) : false;
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = isInList;
+        checkbox.className = 'event-checkbox';
+        checkbox.dataset.index = index;
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                if (typeof addToMyList === 'function') {
+                    addToMyList(concert);
+                }
+            } else {
+                if (typeof removeFromMyList === 'function') {
+                    removeFromMyList(concert);
+                }
+            }
+        });
+        
+        const checkboxCell = document.createElement('td');
+        checkboxCell.style.textAlign = 'center';
+        checkboxCell.appendChild(checkbox);
         
         // Event name - clickable to event page
         const eventUrl = typeof getEventPageUrl === 'function' ? getEventPageUrl(concert) : '#';
@@ -57,19 +80,40 @@ function renderTableView() {
             }
         }
         
-        row.innerHTML = `
-            <td>${escapeHtml(concert.date)}</td>
-            <td><strong>${eventNameHtml}</strong></td>
-            <td><span class="genre-tag" style="background-color: ${genreColor}; color: ${getContrastColor(genreColor)}; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 12px;">${escapeHtml(concert.genre)}</span></td>
-            <td>${venueHtml}</td>
-            <td>${promoterHtml}</td>
-            <td>${concert.ticketLink && concert.ticketLink !== 'N/A' 
-                ? `<a href="${escapeHtml(concert.ticketLink)}" class="glitch-link" target="_blank" rel="noopener noreferrer"><i class="fas fa-ticket-alt"></i> Tickets</a>` 
-                : 'N/A'}</td>
-            <td>${concert.fbLink && concert.fbLink !== 'N/A' && !concert.fbLink.includes('xxxxxxxx') 
-                ? `<a href="${escapeHtml(concert.fbLink)}" class="glitch-link" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook"></i> Facebook</a>` 
-                : 'N/A'}</td>
-        `;
+        const dateCell = document.createElement('td');
+        dateCell.textContent = concert.date;
+        
+        const nameCell = document.createElement('td');
+        nameCell.innerHTML = `<strong>${eventNameHtml}</strong>`;
+        
+        const genreCell = document.createElement('td');
+        genreCell.innerHTML = `<span class="genre-tag" style="background-color: ${genreColor}; color: ${getContrastColor(genreColor)}; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 12px;">${escapeHtml(concert.genre)}</span>`;
+        
+        const venueCell = document.createElement('td');
+        venueCell.innerHTML = venueHtml;
+        
+        const promoterCell = document.createElement('td');
+        promoterCell.innerHTML = promoterHtml;
+        
+        const ticketsCell = document.createElement('td');
+        ticketsCell.innerHTML = concert.ticketLink && concert.ticketLink !== 'N/A' 
+            ? `<a href="${escapeHtml(concert.ticketLink)}" class="glitch-link" target="_blank" rel="noopener noreferrer"><i class="fas fa-ticket-alt"></i> Tickets</a>` 
+            : 'N/A';
+        
+        const fbCell = document.createElement('td');
+        fbCell.innerHTML = concert.fbLink && concert.fbLink !== 'N/A' && !concert.fbLink.includes('xxxxxxxx') 
+            ? `<a href="${escapeHtml(concert.fbLink)}" class="glitch-link" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook"></i> Facebook</a>` 
+            : 'N/A';
+        
+        row.appendChild(checkboxCell);
+        row.appendChild(dateCell);
+        row.appendChild(nameCell);
+        row.appendChild(genreCell);
+        row.appendChild(venueCell);
+        row.appendChild(promoterCell);
+        row.appendChild(ticketsCell);
+        row.appendChild(fbCell);
+        
         tableBody.appendChild(row);
     });
 
@@ -100,8 +144,9 @@ function renderTableView() {
             },
             responsive: true,
             columnDefs: [
-                { orderable: true, targets: [0, 1, 2, 3, 4] },
-                { orderable: false, targets: [5, 6] } // Links columns not sortable
+                { orderable: false, targets: [0] }, // Checkbox column not sortable
+                { orderable: true, targets: [1, 2, 3, 4, 5] },
+                { orderable: false, targets: [6, 7] } // Links columns not sortable
             ]
         });
     } else {
@@ -117,41 +162,33 @@ function getGenreColor(genre) {
 
     const genreLower = genre.toLowerCase();
     
-    // Punk/Hardcore - Muted olive green
+    // Punk/Hardcore: #6B8E23
     if (genreLower.includes('punk') || genreLower.includes('hardcore') || genreLower.includes('oi!')) {
-        return '#556B2F'; // Muted Olive Green
+        return '#6B8E23';
     } 
-    // Metal - Muted dark red
+    // Metal: #8B0000
     else if (genreLower.includes('metal') || genreLower.includes('death') || genreLower.includes('black metal') || genreLower.includes('thrash')) {
-        return '#6B0000'; // Muted Dark Red
+        return '#8B0000';
     } 
-    // Jazz - Muted gold
+    // Jazz: #B8860B
     else if (genreLower.includes('jazz') || genreLower.includes('blues')) {
-        return '#8B6914'; // Muted Dark Goldenrod
+        return '#B8860B';
     } 
-    // Noise/Experimental - Muted slate gray
-    else if (genreLower.includes('noise') || genreLower.includes('experimental') || genreLower.includes('ambient') || genreLower.includes('avant-garde')) {
-        return '#5A5A5A'; // Muted Slate Gray
+    // Noise/Post-Rock: #708090
+    else if (genreLower.includes('noise') || genreLower.includes('post-rock') || genreLower.includes('postrock') || genreLower.includes('experimental') || genreLower.includes('ambient')) {
+        return '#708090';
     } 
-    // Post-Punk - Muted indigo
-    else if (genreLower.includes('post-punk') || genreLower.includes('postpunk') || genreLower.includes('post punk')) {
-        return '#3A0062'; // Muted Indigo
+    // Post-Punk/Dark Wave: #4B0082
+    else if (genreLower.includes('post-punk') || genreLower.includes('postpunk') || genreLower.includes('post punk') || genreLower.includes('dark wave') || genreLower.includes('darkwave')) {
+        return '#4B0082';
     } 
-    // Indie - Muted steel blue
+    // Indie/Folk: #4682B4
     else if (genreLower.includes('indie') || genreLower.includes('alternative') || genreLower.includes('folk') || genreLower.includes('acoustic') || genreLower.includes('dream pop')) {
-        return '#366894'; // Muted Steel Blue
+        return '#4682B4';
     } 
-    // Electronic - Muted dark cyan
+    // Electronic/Dark Synth: #008B8B
     else if (genreLower.includes('electronic') || genreLower.includes('synth') || genreLower.includes('dark synth') || genreLower.includes('techno')) {
-        return '#006B6B'; // Muted Dark Cyan
-    } 
-    // Rock - Primary color
-    else if (genreLower.includes('rock') || genreLower.includes('psychedelic') || genreLower.includes('krautrock')) {
-        return '#B22222'; // Firebrick (primary)
-    } 
-    // Hip Hop - Primary color
-    else if (genreLower.includes('hip hop') || genreLower.includes('rap')) {
-        return '#B22222'; // Firebrick (primary)
+        return '#008B8B';
     } 
     else {
         return '#B22222'; // Default primary color
