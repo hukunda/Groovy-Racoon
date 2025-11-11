@@ -34,12 +34,35 @@ function renderTableView() {
     sortedConcerts.forEach(concert => {
         const genreColor = getGenreColor(concert.genre);
         const row = document.createElement('tr');
+        
+        // Event name - clickable to event page
+        const eventUrl = typeof getEventPageUrl === 'function' ? getEventPageUrl(concert) : '#';
+        const eventNameHtml = `<a href="${eventUrl}" class="glitch-link" style="font-weight: 600; color: var(--primary);">${escapeHtml(concert.artist)}</a>`;
+        
+        // Venue - clickable if link exists
+        let venueHtml = escapeHtml(concert.venue);
+        if (typeof getVenueLink === 'function') {
+            const venueLink = getVenueLink(concert.venue);
+            if (venueLink) {
+                venueHtml = `<a href="${escapeHtml(venueLink)}" class="glitch-link" target="_blank" rel="noopener noreferrer">${escapeHtml(concert.venue)}</a>`;
+            }
+        }
+        
+        // Promoter - clickable if link exists
+        let promoterHtml = escapeHtml(concert.promoter);
+        if (typeof getPromoterLink === 'function') {
+            const promoterLink = getPromoterLink(concert.promoter);
+            if (promoterLink) {
+                promoterHtml = `<a href="${escapeHtml(promoterLink)}" class="glitch-link" target="_blank" rel="noopener noreferrer">${escapeHtml(concert.promoter)}</a>`;
+            }
+        }
+        
         row.innerHTML = `
             <td>${escapeHtml(concert.date)}</td>
-            <td><strong>${escapeHtml(concert.artist)}</strong></td>
+            <td><strong>${eventNameHtml}</strong></td>
             <td><span class="genre-tag" style="background-color: ${genreColor}; color: ${getContrastColor(genreColor)}; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 12px;">${escapeHtml(concert.genre)}</span></td>
-            <td>${escapeHtml(concert.venue)}</td>
-            <td>${escapeHtml(concert.promoter)}</td>
+            <td>${venueHtml}</td>
+            <td>${promoterHtml}</td>
             <td>${concert.ticketLink && concert.ticketLink !== 'N/A' 
                 ? `<a href="${escapeHtml(concert.ticketLink)}" class="glitch-link" target="_blank" rel="noopener noreferrer"><i class="fas fa-ticket-alt"></i> Tickets</a>` 
                 : 'N/A'}</td>

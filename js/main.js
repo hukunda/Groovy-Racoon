@@ -4,7 +4,9 @@
 
 // Google Sheets configuration
 const SPREADSHEET_ID = '1J6aInjzgf-_7PZO6I8TG4Ghvnx9e3Z_E5rVYImY2BC0';
-const GID = '1445856825';
+const GID = '1445856825'; // Main events sheet
+const PROMOTERS_GID = '0'; // Promoters tab GID (update if different)
+const VENUES_GID = '0'; // Venues tab GID (update if different)
 
 // Try multiple URL formats and CORS proxies
 const CSV_URLS = [
@@ -20,6 +22,8 @@ const CSV_URLS = [
 // Global state (explicitly on window for cross-file access)
 window.allConcerts = [];
 window.filteredConcerts = [];
+window.promoterLinks = {};
+window.venueLinks = {};
 
 // DOM elements - will be initialized after DOM is ready
 let loading, error, tableViewBtn, calendarViewBtn, tableView, calendarView;
@@ -221,6 +225,106 @@ function formatDateInput(date) {
 // ============================================
 
 /**
+ * Fetch promoter links from Promoters tab
+ */
+async function fetchPromoterLinks() {
+    const promotersUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${PROMOTERS_GID}`;
+    
+    try {
+        const response = await fetch(promotersUrl, {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'no-cache'
+        });
+        
+        if (response.ok) {
+            const csvText = await response.text();
+            const lines = csvText.split('\n').filter(line => line.trim());
+            
+            // Parse promoter links (format: Name, URL)
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                if (values.length >= 2) {
+                    const name = values[0]?.trim();
+                    const url = values[1]?.trim();
+                    if (name && url) {
+                        window.promoterLinks[name.toLowerCase()] = url;
+                    }
+                }
+            }
+            console.log(`Loaded ${Object.keys(window.promoterLinks).length} promoter links`);
+        }
+    } catch (err) {
+        console.warn('Could not fetch promoter links:', err);
+    }
+}
+
+/**
+ * Fetch venue links from Venues tab
+ */
+async function fetchVenueLinks() {
+    const venuesUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${VENUES_GID}`;
+    
+    try {
+        const response = await fetch(venuesUrl, {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'no-cache'
+        });
+        
+        if (response.ok) {
+            const csvText = await response.text();
+            const lines = csvText.split('\n').filter(line => line.trim());
+            
+            // Parse venue links (format: Name, URL)
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                if (values.length >= 2) {
+                    const name = values[0]?.trim();
+                    const url = values[1]?.trim();
+                    if (name && url) {
+                        window.venueLinks[name.toLowerCase()] = url;
+                    }
+                }
+            }
+            console.log(`Loaded ${Object.keys(window.venueLinks).length} venue links`);
+        }
+    } catch (err) {
+        console.warn('Could not fetch venue links:', err);
+    }
+}
+
+/**
+ * Get promoter link by name
+ */
+function getPromoterLink(promoterName) {
+    if (!promoterName) return null;
+    return window.promoterLinks[promoterName.toLowerCase()] || null;
+}
+
+/**
+ * Get venue link by name
+ */
+function getVenueLink(venueName) {
+    if (!venueName) return null;
+    return window.venueLinks[venueName.toLowerCase()] || null;
+}
+
+/**
+ * Generate event page URL
+ */
+function getEventPageUrl(concert) {
+    // Create a unique ID from event data
+    const eventId = btoa(JSON.stringify({
+        date: concert.date,
+        artist: concert.artist,
+        venue: concert.venue
+    })).replace(/[+/=]/g, '').substring(0, 20);
+    
+    return `event.html?id=${eventId}`;
+}
+
+/**
  * Fetch concerts from Google Sheets with fallback URLs
  */
 async function fetchConcerts() {
@@ -268,6 +372,11 @@ async function fetchConcerts() {
             }));
 
             console.log(`Successfully loaded ${window.allConcerts.length} concerts`);
+            
+            // Fetch promoter and venue links from separate tabs
+            await fetchPromoterLinks();
+            await fetchVenueLinks();
+            
             if (loading) loading.style.display = 'none';
             applyFilters();
             return; // Success!

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Details - Groovy Racoon</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        .event-detail-page {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px var(--shadow);
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        
+        .event-detail-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            opacity: 0.5;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 30px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            animation: glitch 0.3s infinite;
+            transform: translateX(-4px);
+        }
+        
+        .event-header {
+            margin-bottom: 30px;
+        }
+        
+        .event-header h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .event-detail-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--bg-primary);
+            border-radius: 4px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .event-detail-item strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        .event-detail-item p {
+            margin: 0;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        
+        .event-actions {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .event-actions a {
+            padding: 12px 24px;
+            background: var(--primary);
+            color: var(--bg-secondary);
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .event-actions a:hover {
+            background: #8B1A1A;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(178, 34, 34, 0.3);
+            animation: glitch 0.3s infinite;
+        }
+        
+        .loading-event {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .error-event {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="noise-overlay"></div>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo-section">
+                <img src="assets/logo.png" alt="Groovy Racoon Logo" class="logo">
+                <div class="logo-text">
+                    <h1 class="logo-title">Groovy Racoon</h1>
+                    <p class="tagline">Your funky guide to live music!</p>
+                </div>
+            </div>
+            <div class="nav-controls">
+                <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+                    <i class="fas fa-moon theme-icon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div id="loadingEvent" class="loading-event">
+            <div class="spinner"></div>
+            <p>Loading event details...</p>
+        </div>
+        
+        <div id="errorEvent" class="error-event" style="display: none;">
+            <h2>Event Not Found</h2>
+            <p>The event you're looking for could not be found.</p>
+            <a href="index.html" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Events
+            </a>
+        </div>
+        
+        <div id="eventDetail" class="event-detail-page" style="display: none;">
+            <a href="index.html" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Events
+            </a>
+            
+            <div class="event-header">
+                <h1 id="eventTitle"></h1>
+            </div>
+            
+            <div class="event-details">
+                <div class="event-detail-item">
+                    <strong><i class="fas fa-calendar-alt"></i> Date</strong>
+                    <p id="eventDate"></p>
+                </div>
+                
+                <div class="event-detail-item">
+                    <strong><i class="fas fa-music"></i> Genre</strong>
+                    <p id="eventGenre"></p>
+                </div>
+                
+                <div class="event-detail-item">
+                    <strong><i class="fas fa-building"></i> Venue</strong>
+                    <p id="eventVenue"></p>
+                </div>
+                
+                <div class="event-detail-item">
+                    <strong><i class="fas fa-ticket-alt"></i> Promoter</strong>
+                    <p id="eventPromoter"></p>
+                </div>
+            </div>
+            
+            <div class="event-actions" id="eventActions">
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Groovy Racoon</h3>
+                <p>Your funky guide to live music!</p>
+            </div>
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <div class="social-links">
+                    <a href="#" class="social-link glitch-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+                    <a href="#" class="social-link glitch-link" target="_blank" rel="noopener noreferrer">Twitter</a>
+                    <a href="#" class="social-link glitch-link" target="_blank" rel="noopener noreferrer">Instagram</a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <p class="attribution">Made with ❤️ for underground music lovers</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery (required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="js/theme.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/facebook-api.js"></script>
+    
+    <script>
+        // Event page logic
+        async function loadEventDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('id');
+            
+            if (!eventId) {
+                showError();
+                return;
+            }
+            
+            // Wait for concerts to load
+            let attempts = 0;
+            while ((!window.allConcerts || window.allConcerts.length === 0) && attempts < 50) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            
+            if (!window.allConcerts || window.allConcerts.length === 0) {
+                showError();
+                return;
+            }
+            
+            // Find event by matching the ID
+            let foundEvent = null;
+            for (const concert of window.allConcerts) {
+                const testId = btoa(JSON.stringify({
+                    date: concert.date,
+                    artist: concert.artist,
+                    venue: concert.venue
+                })).replace(/[+/=]/g, '').substring(0, 20);
+                
+                if (testId === eventId) {
+                    foundEvent = concert;
+                    break;
+                }
+            }
+            
+            if (!foundEvent) {
+                showError();
+                return;
+            }
+            
+            // Display event details
+            displayEvent(foundEvent);
+        }
+        
+        function showError() {
+            document.getElementById('loadingEvent').style.display = 'none';
+            document.getElementById('errorEvent').style.display = 'block';
+        }
+        
+        function displayEvent(concert) {
+            document.getElementById('loadingEvent').style.display = 'none';
+            document.getElementById('eventDetail').style.display = 'block';
+            
+            document.getElementById('eventTitle').textContent = concert.artist || 'Untitled Event';
+            document.getElementById('eventDate').textContent = concert.date || 'TBA';
+            document.getElementById('eventGenre').textContent = concert.genre || 'N/A';
+            document.getElementById('eventVenue').textContent = concert.venue || 'TBA';
+            document.getElementById('eventPromoter').textContent = concert.promoter || 'N/A';
+            
+            // Add action buttons
+            const actionsDiv = document.getElementById('eventActions');
+            actionsDiv.innerHTML = '';
+            
+            if (concert.ticketLink && concert.ticketLink !== 'N/A') {
+                const ticketLink = document.createElement('a');
+                ticketLink.href = concert.ticketLink;
+                ticketLink.target = '_blank';
+                ticketLink.rel = 'noopener noreferrer';
+                ticketLink.innerHTML = '<i class="fas fa-ticket-alt"></i> Get Tickets';
+                actionsDiv.appendChild(ticketLink);
+            }
+            
+            if (concert.fbLink && concert.fbLink !== 'N/A' && !concert.fbLink.includes('xxxxxxxx')) {
+                const fbLink = document.createElement('a');
+                fbLink.href = concert.fbLink;
+                fbLink.target = '_blank';
+                fbLink.rel = 'noopener noreferrer';
+                fbLink.innerHTML = '<i class="fab fa-facebook"></i> Facebook Event';
+                actionsDiv.appendChild(fbLink);
+            }
+            
+            // Add venue link if available
+            if (typeof getVenueLink === 'function') {
+                const venueLink = getVenueLink(concert.venue);
+                if (venueLink) {
+                    const venueLinkEl = document.createElement('a');
+                    venueLinkEl.href = venueLink;
+                    venueLinkEl.target = '_blank';
+                    venueLinkEl.rel = 'noopener noreferrer';
+                    venueLinkEl.innerHTML = '<i class="fas fa-building"></i> Venue Website';
+                    actionsDiv.appendChild(venueLinkEl);
+                }
+            }
+            
+            // Add promoter link if available
+            if (typeof getPromoterLink === 'function') {
+                const promoterLink = getPromoterLink(concert.promoter);
+                if (promoterLink) {
+                    const promoterLinkEl = document.createElement('a');
+                    promoterLinkEl.href = promoterLink;
+                    promoterLinkEl.target = '_blank';
+                    promoterLinkEl.rel = 'noopener noreferrer';
+                    promoterLinkEl.innerHTML = '<i class="fas fa-ticket-alt"></i> Promoter Website';
+                    actionsDiv.appendChild(promoterLinkEl);
+                }
+            }
+        }
+        
+        // Load event when page is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadEventDetails);
+        } else {
+            loadEventDetails();
+        }
+    </script>
+</body>
+</html>
+

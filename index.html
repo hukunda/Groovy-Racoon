@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <div class="noise-overlay"></div>
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo-section">
@@ -81,6 +82,11 @@
                     </button>
                 </div>
             </div>
+            <div class="filters-actions">
+                <button id="createListBtn" class="create-list-btn">
+                    <i class="fas fa-list"></i> Create New List
+                </button>
+            </div>
         </section>
 
         <!-- Loading & Error Messages -->
@@ -124,6 +130,27 @@
                 <div id="modalBody"></div>
             </div>
         </div>
+
+        <!-- Create List Modal -->
+        <div id="listModal" class="modal">
+            <div class="modal-content list-modal-content">
+                <span class="close-list-modal">&times;</span>
+                <h2><i class="fas fa-list"></i> Create New List</h2>
+                <div id="listModalBody">
+                    <p>Select events to add to your custom list:</p>
+                    <div id="eventCheckboxes" class="event-checkboxes"></div>
+                    <div class="list-actions">
+                        <button id="exportICSBtn" class="export-btn" disabled>
+                            <i class="fas fa-download"></i> Export as ICS
+                        </button>
+                        <button id="clearListBtn" class="clear-list-btn" disabled>
+                            <i class="fas fa-trash"></i> Clear List
+                        </button>
+                    </div>
+                    <div id="selectedCount" class="selected-count">0 events selected</div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <footer class="footer">
@@ -162,5 +189,6 @@
     <script src="js/table.js"></script>
     <script src="js/facebook-api.js"></script>
     <script src="js/calendar.js"></script>
+    <script src="js/list.js"></script>
 </body>
 </html>
