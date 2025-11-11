@@ -509,13 +509,15 @@ function applyFilters() {
  */
 function toggleFilters() {
     if (filtersContainer) {
+        const filtersSection = filtersContainer.closest('.filters-section');
         filtersContainer.classList.toggle('show');
-        const icon = document.getElementById('filterToggleIcon');
-        if (icon) {
+        
+        // Toggle class on parent section for CSS styling
+        if (filtersSection) {
             if (filtersContainer.classList.contains('show')) {
-                icon.style.transform = 'rotate(180deg)';
+                filtersSection.classList.add('filters-open');
             } else {
-                icon.style.transform = 'rotate(0deg)';
+                filtersSection.classList.remove('filters-open');
             }
         }
     }
