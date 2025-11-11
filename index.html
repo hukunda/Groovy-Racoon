@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groovy Racoon - Your funky guide to live music!</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
+    
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo-section">
+                <img src="assets/logo.png" alt="Groovy Racoon Logo" class="logo">
+                <div class="logo-text">
+                    <h1 class="logo-title">Groovy Racoon</h1>
+                    <p class="tagline">Your funky guide to live music!</p>
+                </div>
+            </div>
+            <div class="nav-controls">
+                <div class="view-toggle">
+                <button id="tableViewBtn" class="view-btn active">
+                    <i class="fas fa-table"></i> Table
+                </button>
+                <button id="calendarViewBtn" class="view-btn">
+                    <i class="fas fa-calendar"></i> Calendar
+                </button>
+                </div>
+                <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+                    <i class="fas fa-moon theme-icon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Filters Section -->
+        <section class="filters-section">
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label for="filterDate"><i class="fas fa-calendar-alt"></i> Date:</label>
+                    <input type="date" id="filterDate" class="filter-input">
+                </div>
+                <div class="filter-group">
+                    <label for="filterArtist"><i class="fas fa-microphone"></i> Artist/Event:</label>
+                    <input type="text" id="filterArtist" class="filter-input" placeholder="Search...">
+                </div>
+                <div class="filter-group">
+                    <label for="filterGenre"><i class="fas fa-music"></i> Genre:</label>
+                    <input type="text" id="filterGenre" class="filter-input" placeholder="Search...">
+                </div>
+                <div class="filter-group">
+                    <label for="filterVenue"><i class="fas fa-building"></i> Venue:</label>
+                    <input type="text" id="filterVenue" class="filter-input" placeholder="Search...">
+                </div>
+                <div class="filter-group">
+                    <label for="filterPromoter"><i class="fas fa-ticket-alt"></i> Promoter:</label>
+                    <input type="text" id="filterPromoter" class="filter-input" placeholder="Search...">
+                </div>
+                <div class="filter-group filter-clear">
+                    <button id="clearFilters" class="clear-btn-icon" title="Clear all filters">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Loading & Error Messages -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading concerts...</p>
+        </div>
+        <div id="error" class="error" style="display: none;"></div>
+
+        <!-- Table View -->
+        <section id="tableView" class="view-section active">
+            <div class="table-container">
+                <table id="concertsTable" class="display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Artist/Event Name</th>
+                            <th>Genre</th>
+                            <th>Venue</th>
+                            <th>Promoter</th>
+                            <th>Tickets</th>
+                            <th>Facebook</th>
+                        </tr>
+                    </thead>
+                    <tbody id="concertsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Calendar View -->
+        <section id="calendarView" class="view-section">
+            <div id="calendar"></div>
+        </section>
+
+        <!-- Event Modal -->
+        <div id="eventModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 id="modalTitle"></h2>
+                <div id="modalBody"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Groovy Racoon</h3>
+                <p>Your funky guide to live music!</p>
+            </div>
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <div class="social-links">
+                    <a href="#" class="social-link glitch-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+                    <a href="#" class="social-link glitch-link" target="_blank" rel="noopener noreferrer">Twitter</a>
+                    <a href="#" class="social-link glitch-link" target="_blank" rel="noopener noreferrer">Instagram</a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <p class="attribution">Made with ❤️ for underground music lovers</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery (required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales/cs.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="js/theme.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/table.js"></script>
+    <script src="js/calendar.js"></script>
+</body>
+</html>
