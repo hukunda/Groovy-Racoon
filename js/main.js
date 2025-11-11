@@ -100,8 +100,23 @@ function setupEventListeners() {
     
     // Filter toggle button
     if (toggleFiltersBtn) {
-        toggleFiltersBtn.addEventListener('click', toggleFilters);
+        toggleFiltersBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleFilters();
+        });
         console.log('Toggle filters button listener added');
+    } else {
+        console.error('Toggle filters button not found!');
+    }
+    
+    // Ensure filters start collapsed
+    if (filtersContainer) {
+        filtersContainer.classList.remove('show');
+        const filtersSection = filtersContainer.closest('.filters-section');
+        if (filtersSection) {
+            filtersSection.classList.remove('filters-open');
+        }
     }
     
     // Clear filters button
@@ -508,18 +523,33 @@ function applyFilters() {
  * Toggle filters visibility
  */
 function toggleFilters() {
-    if (filtersContainer) {
-        const filtersSection = filtersContainer.closest('.filters-section');
-        filtersContainer.classList.toggle('show');
-        
-        // Toggle class on parent section for CSS styling
-        if (filtersSection) {
-            if (filtersContainer.classList.contains('show')) {
-                filtersSection.classList.add('filters-open');
-            } else {
-                filtersSection.classList.remove('filters-open');
-            }
+    console.log('toggleFilters called');
+    if (!filtersContainer) {
+        console.error('filtersContainer not found');
+        filtersContainer = document.getElementById('filtersContainer');
+        if (!filtersContainer) {
+            console.error('Still cannot find filtersContainer');
+            return;
         }
+    }
+    
+    const filtersSection = filtersContainer.closest('.filters-section');
+    const hasShow = filtersContainer.classList.contains('show');
+    
+    console.log('Current state:', hasShow ? 'shown' : 'hidden');
+    
+    if (hasShow) {
+        filtersContainer.classList.remove('show');
+        if (filtersSection) {
+            filtersSection.classList.remove('filters-open');
+        }
+        console.log('Filters hidden');
+    } else {
+        filtersContainer.classList.add('show');
+        if (filtersSection) {
+            filtersSection.classList.add('filters-open');
+        }
+        console.log('Filters shown');
     }
 }
 

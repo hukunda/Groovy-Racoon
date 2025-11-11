@@ -14,9 +14,13 @@ function renderTableView() {
     tableBody.innerHTML = '';
 
     if (!window.filteredConcerts || window.filteredConcerts.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">No concerts found</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">No concerts found</td></tr>';
         if (dataTable) {
-            dataTable.destroy();
+            try {
+                dataTable.destroy();
+            } catch (e) {
+                console.warn('Error destroying DataTable:', e);
+            }
             dataTable = null;
         }
         return;
@@ -119,36 +123,47 @@ function renderTableView() {
 
     // Initialize or reinitialize DataTables
     if (dataTable) {
-        dataTable.destroy();
+        try {
+            dataTable.destroy();
+        } catch (e) {
+            console.warn('Error destroying DataTable:', e);
+        }
         dataTable = null;
     }
 
     // Check if jQuery and DataTables are available
     if (typeof $ !== 'undefined' && $.fn.DataTable) {
-        dataTable = $('#concertsTable').DataTable({
-            pageLength: 25,
-            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-            order: [[0, 'asc']], // Sort by date column
-            language: {
-                search: "Search:",
-                lengthMenu: "Show _MENU_ concerts",
-                info: "Showing _START_ to _END_ of _TOTAL_ concerts",
-                infoEmpty: "No concerts available",
-                infoFiltered: "(filtered from _MAX_ total concerts)",
-                paginate: {
-                    first: "First",
-                    last: "Last",
-                    next: "Next",
-                    previous: "Previous"
-                }
-            },
-            responsive: true,
-            columnDefs: [
-                { orderable: false, targets: [0] }, // Checkbox column not sortable
-                { orderable: true, targets: [1, 2, 3, 4, 5] },
-                { orderable: false, targets: [6, 7] } // Links columns not sortable
-            ]
-        });
+        try {
+            dataTable = $('#concertsTable').DataTable({
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                order: [[1, 'asc']], // Sort by date column (index 1, since 0 is checkbox)
+                language: {
+                    search: "Search:",
+                    lengthMenu: "Show _MENU_ concerts",
+                    info: "Showing _START_ to _END_ of _TOTAL_ concerts",
+                    infoEmpty: "No concerts available",
+                    infoFiltered: "(filtered from _MAX_ total concerts)",
+                    paginate: {
+                        first: "First",
+                        last: "Last",
+                        next: "Next",
+                        previous: "Previous"
+                    }
+                },
+                responsive: true,
+                processing: false, // Disable processing indicator for faster rendering
+                deferRender: true, // Only render visible rows
+                columnDefs: [
+                    { orderable: false, targets: [0] }, // Checkbox column not sortable
+                    { orderable: true, targets: [1, 2, 3, 4, 5] },
+                    { orderable: false, targets: [6, 7] } // Links columns not sortable
+                ]
+            });
+            console.log('DataTable initialized successfully');
+        } catch (e) {
+            console.error('Error initializing DataTable:', e);
+        }
     } else {
         console.error('jQuery or DataTables not loaded');
     }
