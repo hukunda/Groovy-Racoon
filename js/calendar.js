@@ -42,10 +42,36 @@ function initCalendar() {
                 info.jsEvent.preventDefault();
             },
             eventDisplay: 'block',
-            dayMaxEvents: 3,
+            dayMaxEvents: false,
             moreLinkClick: 'popover',
             eventTextColor: '#FFFFFF',
-            height: 'auto'
+            height: 'auto',
+            firstDay: 1, // Start week on Monday
+            eventContent: function(arg) {
+                // Custom event rendering
+                const genre = arg.event.extendedProps.genre || '';
+                const artist = arg.event.extendedProps.artist || arg.event.title;
+                
+                const genreEl = document.createElement('div');
+                genreEl.className = 'fc-event-genre';
+                genreEl.textContent = genre;
+                genreEl.style.fontSize = '0.75em';
+                genreEl.style.opacity = '0.9';
+                genreEl.style.marginBottom = '2px';
+                
+                const artistEl = document.createElement('div');
+                artistEl.className = 'fc-event-artist';
+                artistEl.textContent = artist;
+                artistEl.style.fontWeight = 'bold';
+                artistEl.style.fontSize = '0.85em';
+                
+                const wrapper = document.createElement('div');
+                wrapper.className = 'fc-event-content-wrapper';
+                wrapper.appendChild(genreEl);
+                wrapper.appendChild(artistEl);
+                
+                return { domNodes: [wrapper] };
+            }
         });
 
         calendar.render();
@@ -67,8 +93,14 @@ function getCalendarEvents() {
             const date = new Date(concert.parsedDate);
             const color = getGenreColor(concert.genre);
 
+            // Create title with genre and artist
+            let title = concert.artist || 'Untitled Event';
+            if (concert.genre) {
+                title = `${concert.genre}\n${title}`;
+            }
+            
             return {
-                title: concert.artist,
+                title: title,
                 start: date.toISOString().split('T')[0],
                 extendedProps: {
                     genre: concert.genre,
@@ -76,10 +108,12 @@ function getCalendarEvents() {
                     promoter: concert.promoter,
                     ticketLink: concert.ticketLink,
                     fbLink: concert.fbLink,
-                    date: concert.date
+                    date: concert.date,
+                    artist: concert.artist
                 },
                 backgroundColor: color,
-                borderColor: color
+                borderColor: color,
+                textColor: '#FFFFFF'
             };
         });
 }
@@ -137,7 +171,16 @@ function renderCalendarView() {
     
     // Check if calendar view is actually visible
     const calendarView = document.getElementById('calendarView');
-    if (!calendarView || calendarView.style.display === 'none' || !calendarView.classList.contains('active')) {
+    if (!calendarView) {
+        console.error('Calendar view container not found');
+        return;
+    }
+    
+    // Check visibility - be more lenient
+    const isVisible = calendarView.style.display !== 'none' && 
+                     (calendarView.classList.contains('active') || calendarView.offsetParent !== null);
+    
+    if (!isVisible) {
         console.log('Calendar view not visible, skipping render');
         return;
     }
@@ -153,6 +196,9 @@ function renderCalendarView() {
             console.log('Got events:', events.length);
             if (events && events.length > 0) {
                 calendar.addEventSource(events);
+            } else {
+                // Even if no events, still render to show the calendar structure
+                calendar.render();
             }
             calendar.render();
             console.log('Calendar rendered');
@@ -195,7 +241,9 @@ async function showEventModal(event) {
     
     const isInList = typeof isInMyList === 'function' ? isInMyList(concert) : false;
     
-    modalTitle.textContent = event.title;
+    // Use artist from extendedProps if available, otherwise use title
+    const artist = props.artist || event.title.split('\n').pop() || event.title;
+    modalTitle.textContent = artist;
     modalBody.innerHTML = `
         <p><strong><i class="fas fa-calendar-alt"></i> Date:</strong> ${props.date || event.startStr}</p>
         <p><strong><i class="fas fa-music"></i> Genre:</strong> ${props.genre || 'N/A'}</p>

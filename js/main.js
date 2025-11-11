@@ -604,7 +604,7 @@ function showCalendarView() {
         calendarView.offsetHeight; // Force reflow
     }
     
-    // Small delay to ensure DOM is ready and visible
+    // Small delay to ensure DOM is ready and visible, then render
     setTimeout(() => {
         if (typeof renderCalendarView === 'function') {
             console.log('Calling renderCalendarView');
@@ -612,7 +612,14 @@ function showCalendarView() {
         } else {
             console.error('renderCalendarView function not found');
         }
-    }, 200);
+    }, 100);
+    
+    // Also try rendering after a longer delay to ensure FullCalendar is ready
+    setTimeout(() => {
+        if (typeof renderCalendarView === 'function' && calendarView && calendarView.style.display !== 'none') {
+            renderCalendarView();
+        }
+    }, 500);
 }
 
 // ============================================
