@@ -422,7 +422,12 @@ function showCalendarView() {
     if (tableViewBtn) tableViewBtn.classList.remove('active');
     if (calendarViewBtn) calendarViewBtn.classList.add('active');
     
-    // Small delay to ensure DOM is ready
+    // Force reflow and then render calendar
+    if (calendarView) {
+        calendarView.offsetHeight; // Force reflow
+    }
+    
+    // Small delay to ensure DOM is ready and visible
     setTimeout(() => {
         if (typeof renderCalendarView === 'function') {
             console.log('Calling renderCalendarView');
@@ -430,7 +435,7 @@ function showCalendarView() {
         } else {
             console.error('renderCalendarView function not found');
         }
-    }, 100);
+    }, 200);
 }
 
 // ============================================

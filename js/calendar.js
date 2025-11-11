@@ -143,20 +143,35 @@ function renderCalendarView() {
         return;
     }
     
+    // Check if calendar view is actually visible
+    const calendarView = document.getElementById('calendarView');
+    if (!calendarView || calendarView.style.display === 'none' || !calendarView.classList.contains('active')) {
+        console.log('Calendar view not visible, skipping render');
+        return;
+    }
+    
     if (!calendar) {
+        console.log('Initializing new calendar');
         initCalendar();
     } else {
         try {
+            console.log('Updating existing calendar');
             calendar.removeAllEvents();
             const events = getCalendarEvents();
+            console.log('Got events:', events.length);
             if (events && events.length > 0) {
                 calendar.addEventSource(events);
             }
             calendar.render();
+            console.log('Calendar rendered');
         } catch (err) {
             console.error('Error rendering calendar:', err);
             // Try to reinitialize
-            calendar.destroy();
+            try {
+                calendar.destroy();
+            } catch (e) {
+                console.warn('Error destroying calendar:', e);
+            }
             calendar = null;
             initCalendar();
         }
