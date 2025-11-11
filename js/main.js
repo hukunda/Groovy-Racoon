@@ -21,21 +21,80 @@ const CSV_URLS = [
 window.allConcerts = [];
 window.filteredConcerts = [];
 
-// DOM elements
-const loading = document.getElementById('loading');
-const error = document.getElementById('error');
-const tableViewBtn = document.getElementById('tableViewBtn');
-const calendarViewBtn = document.getElementById('calendarViewBtn');
-const tableView = document.getElementById('tableView');
-const calendarView = document.getElementById('calendarView');
+// DOM elements - will be initialized after DOM is ready
+let loading, error, tableViewBtn, calendarViewBtn, tableView, calendarView;
+let filterDate, filterArtist, filterGenre, filterVenue, filterPromoter, clearFiltersBtn;
 
-// Filter inputs
-const filterDate = document.getElementById('filterDate');
-const filterArtist = document.getElementById('filterArtist');
-const filterGenre = document.getElementById('filterGenre');
-const filterVenue = document.getElementById('filterVenue');
-const filterPromoter = document.getElementById('filterPromoter');
-const clearFiltersBtn = document.getElementById('clearFilters');
+// Initialize DOM elements
+function initDOMElements() {
+    loading = document.getElementById('loading');
+    error = document.getElementById('error');
+    tableViewBtn = document.getElementById('tableViewBtn');
+    calendarViewBtn = document.getElementById('calendarViewBtn');
+    tableView = document.getElementById('tableView');
+    calendarView = document.getElementById('calendarView');
+    
+    // Filter inputs
+    filterDate = document.getElementById('filterDate');
+    filterArtist = document.getElementById('filterArtist');
+    filterGenre = document.getElementById('filterGenre');
+    filterVenue = document.getElementById('filterVenue');
+    filterPromoter = document.getElementById('filterPromoter');
+    clearFiltersBtn = document.getElementById('clearFilters');
+    
+    console.log('DOM elements initialized:', {
+        filterDate: !!filterDate,
+        filterArtist: !!filterArtist,
+        filterGenre: !!filterGenre,
+        filterVenue: !!filterVenue,
+        filterPromoter: !!filterPromoter,
+        tableViewBtn: !!tableViewBtn,
+        calendarViewBtn: !!calendarViewBtn
+    });
+    
+    // Set up event listeners
+    setupEventListeners();
+}
+
+// Set up event listeners
+function setupEventListeners() {
+    if (tableViewBtn) {
+        tableViewBtn.addEventListener('click', showTableView);
+        console.log('Table view button listener added');
+    }
+    if (calendarViewBtn) {
+        calendarViewBtn.addEventListener('click', showCalendarView);
+        console.log('Calendar view button listener added');
+    }
+    
+    // Filter inputs
+    if (filterDate) {
+        filterDate.addEventListener('change', applyFilters);
+        console.log('Date filter listener added');
+    }
+    if (filterArtist) {
+        filterArtist.addEventListener('input', applyFilters);
+        console.log('Artist filter listener added');
+    }
+    if (filterGenre) {
+        filterGenre.addEventListener('input', applyFilters);
+        console.log('Genre filter listener added');
+    }
+    if (filterVenue) {
+        filterVenue.addEventListener('input', applyFilters);
+        console.log('Venue filter listener added');
+    }
+    if (filterPromoter) {
+        filterPromoter.addEventListener('input', applyFilters);
+        console.log('Promoter filter listener added');
+    }
+    
+    // Clear filters button
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', clearFilters);
+        console.log('Clear filters button listener added');
+    }
+}
 
 // ============================================
 // CSV Parsing Functions
@@ -156,8 +215,8 @@ function formatDateInput(date) {
  * Fetch concerts from Google Sheets with fallback URLs
  */
 async function fetchConcerts() {
-    loading.style.display = 'block';
-    error.style.display = 'none';
+        if (loading) loading.style.display = 'block';
+        if (error) error.style.display = 'none';
 
     let lastError = null;
     
@@ -200,7 +259,7 @@ async function fetchConcerts() {
             }));
 
             console.log(`Successfully loaded ${window.allConcerts.length} concerts`);
-            loading.style.display = 'none';
+            if (loading) loading.style.display = 'none';
             applyFilters();
             return; // Success!
             
@@ -212,8 +271,9 @@ async function fetchConcerts() {
     }
     
     // All URLs failed
-    loading.style.display = 'none';
-    error.style.display = 'block';
+    if (loading) loading.style.display = 'none';
+    if (error) {
+        error.style.display = 'block';
     error.innerHTML = `
         <strong>Error loading data:</strong> ${lastError?.message || 'Unknown error'}<br><br>
         <strong>Possible solutions:</strong><br>
@@ -222,6 +282,7 @@ async function fetchConcerts() {
         3. The sheet might be private - make sure it's publicly accessible<br>
         4. Try refreshing the page
     `;
+    }
     console.error('All fetch attempts failed. Last error:', lastError);
 }
 
@@ -233,10 +294,25 @@ async function fetchConcerts() {
  * Apply all active filters
  */
 function applyFilters() {
+    if (!window.allConcerts || window.allConcerts.length === 0) {
+        window.filteredConcerts = [];
+        if (typeof renderTableView === 'function') {
+            renderTableView();
+        }
+        return;
+    }
+    
+    // Get filter values safely
+    const dateValue = filterDate ? filterDate.value : '';
+    const artistValue = filterArtist ? filterArtist.value.trim() : '';
+    const genreValue = filterGenre ? filterGenre.value.trim() : '';
+    const venueValue = filterVenue ? filterVenue.value.trim() : '';
+    const promoterValue = filterPromoter ? filterPromoter.value.trim() : '';
+    
     window.filteredConcerts = window.allConcerts.filter(concert => {
         // Date filter
-        if (filterDate.value) {
-            const filterDateObj = new Date(filterDate.value);
+        if (dateValue) {
+            const filterDateObj = new Date(dateValue);
             if (concert.parsedDate) {
                 const concertDate = new Date(concert.parsedDate);
                 if (concertDate.toDateString() !== filterDateObj.toDateString()) {
@@ -248,27 +324,40 @@ function applyFilters() {
         }
 
         // Artist filter
-        if (filterArtist.value && !concert.artist.toLowerCase().includes(filterArtist.value.toLowerCase())) {
-            return false;
+        if (artistValue && concert.artist) {
+            if (!concert.artist.toLowerCase().includes(artistValue.toLowerCase())) {
+                return false;
+            }
         }
 
         // Genre filter
-        if (filterGenre.value && !concert.genre.toLowerCase().includes(filterGenre.value.toLowerCase())) {
-            return false;
+        if (genreValue && concert.genre) {
+            if (!concert.genre.toLowerCase().includes(genreValue.toLowerCase())) {
+                return false;
+            }
         }
 
         // Venue filter
-        if (filterVenue.value && !concert.venue.toLowerCase().includes(filterVenue.value.toLowerCase())) {
-            return false;
+        if (venueValue && concert.venue) {
+            if (!concert.venue.toLowerCase().includes(venueValue.toLowerCase())) {
+                return false;
+            }
         }
 
         // Promoter filter
-        if (filterPromoter.value && !concert.promoter.toLowerCase().includes(filterPromoter.value.toLowerCase())) {
-            return false;
+        if (promoterValue && concert.promoter) {
+            if (!concert.promoter.toLowerCase().includes(promoterValue.toLowerCase())) {
+                return false;
+            }
         }
 
         return true;
     });
+
+    console.log(`Filtered ${window.filteredConcerts.length} concerts from ${window.allConcerts.length} total`);
+    if (genreValue) {
+        console.log(`Genre filter: "${genreValue}" - Found:`, window.filteredConcerts.map(c => c.genre));
+    }
 
     // Update views
     if (typeof renderTableView === 'function') {
@@ -283,11 +372,11 @@ function applyFilters() {
  * Clear all filters
  */
 function clearFilters() {
-    filterDate.value = '';
-    filterArtist.value = '';
-    filterGenre.value = '';
-    filterVenue.value = '';
-    filterPromoter.value = '';
+    if (filterDate) filterDate.value = '';
+    if (filterArtist) filterArtist.value = '';
+    if (filterGenre) filterGenre.value = '';
+    if (filterVenue) filterVenue.value = '';
+    if (filterPromoter) filterPromoter.value = '';
     applyFilters();
 }
 
@@ -299,10 +388,17 @@ function clearFilters() {
  * Switch to table view
  */
 function showTableView() {
-    tableView.classList.add('active');
-    calendarView.classList.remove('active');
-    tableViewBtn.classList.add('active');
-    calendarViewBtn.classList.remove('active');
+    console.log('Switching to table view');
+    if (calendarView) {
+        calendarView.classList.remove('active');
+        calendarView.style.display = 'none';
+    }
+    if (tableView) {
+        tableView.classList.add('active');
+        tableView.style.display = 'block';
+    }
+    if (tableViewBtn) tableViewBtn.classList.add('active');
+    if (calendarViewBtn) calendarViewBtn.classList.remove('active');
     // Re-render table if data is available
     if (typeof renderTableView === 'function' && window.filteredConcerts) {
         renderTableView();
@@ -313,37 +409,42 @@ function showTableView() {
  * Switch to calendar view
  */
 function showCalendarView() {
-    tableView.classList.remove('active');
-    calendarView.classList.add('active');
-    tableViewBtn.classList.remove('active');
-    calendarViewBtn.classList.add('active');
-    if (typeof renderCalendarView === 'function') {
-        renderCalendarView();
+    console.log('Switching to calendar view');
+    if (tableView) {
+        tableView.classList.remove('active');
+        tableView.style.display = 'none';
     }
+    if (calendarView) {
+        calendarView.classList.add('active');
+        calendarView.style.display = 'block';
+        console.log('Calendar view displayed');
+    }
+    if (tableViewBtn) tableViewBtn.classList.remove('active');
+    if (calendarViewBtn) calendarViewBtn.classList.add('active');
+    
+    // Small delay to ensure DOM is ready
+    setTimeout(() => {
+        if (typeof renderCalendarView === 'function') {
+            console.log('Calling renderCalendarView');
+            renderCalendarView();
+        } else {
+            console.error('renderCalendarView function not found');
+        }
+    }, 100);
 }
-
-// ============================================
-// Event Listeners
-// ============================================
-
-// View toggle buttons
-tableViewBtn.addEventListener('click', showTableView);
-calendarViewBtn.addEventListener('click', showCalendarView);
-
-// Filter inputs
-filterDate.addEventListener('change', applyFilters);
-filterArtist.addEventListener('input', applyFilters);
-filterGenre.addEventListener('input', applyFilters);
-filterVenue.addEventListener('input', applyFilters);
-filterPromoter.addEventListener('input', applyFilters);
-
-// Clear filters button
-clearFiltersBtn.addEventListener('click', clearFilters);
 
 // ============================================
 // Initialize
 // ============================================
 
-// Fetch concerts on page load
-fetchConcerts();
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        initDOMElements();
+        fetchConcerts();
+    });
+} else {
+    initDOMElements();
+    fetchConcerts();
+}
 

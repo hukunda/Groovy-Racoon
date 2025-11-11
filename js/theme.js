@@ -11,9 +11,20 @@ let currentThemeMode = THEME_AUTO;
 let currentTheme = THEME_LIGHT;
 
 // DOM elements
-const themeToggle = document.getElementById('themeToggle');
-const themeIcon = themeToggle.querySelector('.theme-icon');
-const body = document.body;
+let themeToggle, themeIcon, body;
+
+function initThemeElements() {
+    themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeIcon = themeToggle.querySelector('.theme-icon');
+    }
+    body = document.body;
+    
+    // Event listener
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
+}
 
 /**
  * Get current time-based theme
@@ -32,11 +43,15 @@ function applyTheme(theme) {
     
     // Update icon
     if (theme === THEME_DARK) {
-        themeIcon.textContent = '☀️';
-        themeToggle.setAttribute('title', 'Switch to light theme');
+        if (themeIcon) {
+            themeIcon.className = 'fas fa-sun theme-icon';
+        }
+        if (themeToggle) themeToggle.setAttribute('title', 'Switch to light theme');
     } else {
-        themeIcon.textContent = '🌙';
-        themeToggle.setAttribute('title', 'Switch to dark theme');
+        if (themeIcon) {
+            themeIcon.className = 'fas fa-moon theme-icon';
+        }
+        if (themeToggle) themeToggle.setAttribute('title', 'Switch to dark theme');
     }
     
     // Update FullCalendar theme if it exists
@@ -120,15 +135,14 @@ function resetToAutoTheme() {
     applyTheme(timeTheme);
 }
 
-// Event listener
-if (themeToggle) {
-    themeToggle.addEventListener('click', toggleTheme);
-}
-
 // Initialize on load
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initTheme);
+    document.addEventListener('DOMContentLoaded', () => {
+        initThemeElements();
+        initTheme();
+    });
 } else {
+    initThemeElements();
     initTheme();
 }
 

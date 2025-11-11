@@ -41,10 +41,10 @@ function renderTableView() {
             <td>${escapeHtml(concert.venue)}</td>
             <td>${escapeHtml(concert.promoter)}</td>
             <td>${concert.ticketLink && concert.ticketLink !== 'N/A' 
-                ? `<a href="${escapeHtml(concert.ticketLink)}" class="glitch-link" target="_blank" rel="noopener noreferrer">🎫 Tickets</a>` 
+                ? `<a href="${escapeHtml(concert.ticketLink)}" class="glitch-link" target="_blank" rel="noopener noreferrer"><i class="fas fa-ticket-alt"></i> Tickets</a>` 
                 : 'N/A'}</td>
             <td>${concert.fbLink && concert.fbLink !== 'N/A' && !concert.fbLink.includes('xxxxxxxx') 
-                ? `<a href="${escapeHtml(concert.fbLink)}" class="glitch-link" target="_blank" rel="noopener noreferrer">📘 Facebook</a>` 
+                ? `<a href="${escapeHtml(concert.fbLink)}" class="glitch-link" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook"></i> Facebook</a>` 
                 : 'N/A'}</td>
         `;
         tableBody.appendChild(row);

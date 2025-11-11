@@ -10,31 +10,49 @@ let calendar = null;
 function initCalendar() {
     const calendarEl = document.getElementById('calendar');
     
+    if (!calendarEl) {
+        console.error('Calendar element not found');
+        return;
+    }
+    
     if (calendar) {
-        calendar.destroy();
+        try {
+            calendar.destroy();
+        } catch (e) {
+            console.warn('Error destroying calendar:', e);
+        }
+        calendar = null;
     }
 
-    calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'cs',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth'
-        },
-        events: getCalendarEvents(),
-        eventClick: function(info) {
-            showEventModal(info.event);
-            info.jsEvent.preventDefault();
-        },
-        eventDisplay: 'block',
-        dayMaxEvents: 3,
-        moreLinkClick: 'popover',
-        eventTextColor: '#FFFFFF',
-        height: 'auto'
-    });
+    try {
+        const events = getCalendarEvents();
+        console.log('Initializing calendar with', events.length, 'events');
+        
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'cs',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth'
+            },
+            events: events,
+            eventClick: function(info) {
+                showEventModal(info.event);
+                info.jsEvent.preventDefault();
+            },
+            eventDisplay: 'block',
+            dayMaxEvents: 3,
+            moreLinkClick: 'popover',
+            eventTextColor: '#FFFFFF',
+            height: 'auto'
+        });
 
-    calendar.render();
+        calendar.render();
+        console.log('Calendar rendered successfully');
+    } catch (error) {
+        console.error('Error initializing calendar:', error);
+    }
 }
 
 /**
@@ -119,12 +137,29 @@ function getGenreColor(genre) {
  * Render calendar view
  */
 function renderCalendarView() {
+    const calendarEl = document.getElementById('calendar');
+    if (!calendarEl) {
+        console.error('Calendar element not found');
+        return;
+    }
+    
     if (!calendar) {
         initCalendar();
     } else {
-        calendar.removeAllEvents();
-        calendar.addEventSource(getCalendarEvents());
-        calendar.render();
+        try {
+            calendar.removeAllEvents();
+            const events = getCalendarEvents();
+            if (events && events.length > 0) {
+                calendar.addEventSource(events);
+            }
+            calendar.render();
+        } catch (err) {
+            console.error('Error rendering calendar:', err);
+            // Try to reinitialize
+            calendar.destroy();
+            calendar = null;
+            initCalendar();
+        }
     }
 }
 
@@ -141,16 +176,16 @@ function showEventModal(event) {
 
     modalTitle.textContent = event.title;
     modalBody.innerHTML = `
-        <p><strong>📅 Date:</strong> ${props.date || event.startStr}</p>
-        <p><strong>🎵 Genre:</strong> ${props.genre || 'N/A'}</p>
-        <p><strong>🏢 Venue:</strong> ${props.venue || 'N/A'}</p>
-        <p><strong>🎪 Promoter:</strong> ${props.promoter || 'N/A'}</p>
+        <p><strong><i class="fas fa-calendar-alt"></i> Date:</strong> ${props.date || event.startStr}</p>
+        <p><strong><i class="fas fa-music"></i> Genre:</strong> ${props.genre || 'N/A'}</p>
+        <p><strong><i class="fas fa-building"></i> Venue:</strong> ${props.venue || 'N/A'}</p>
+        <p><strong><i class="fas fa-ticket-alt"></i> Promoter:</strong> ${props.promoter || 'N/A'}</p>
         <div style="margin-top: 20px;">
             ${props.ticketLink && props.ticketLink !== 'N/A' 
-                ? `<a href="${props.ticketLink}" class="glitch-link" target="_blank" rel="noopener noreferrer">🎫 Get Tickets</a>` 
+                ? `<a href="${props.ticketLink}" class="glitch-link" target="_blank" rel="noopener noreferrer"><i class="fas fa-ticket-alt"></i> Get Tickets</a>` 
                 : ''}
             ${props.fbLink && props.fbLink !== 'N/A' && !props.fbLink.includes('xxxxxxxx') 
-                ? `<a href="${props.fbLink}" class="glitch-link" target="_blank" rel="noopener noreferrer">📘 Facebook Event</a>` 
+                ? `<a href="${props.fbLink}" class="glitch-link" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook"></i> Facebook Event</a>` 
                 : ''}
         </div>
     `;

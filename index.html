@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- FullCalendar CSS -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
@@ -23,7 +25,7 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo-section">
-                <img src="assets/logo.png" alt="Groovy Racoon Logo" class="logo" onerror="this.style.display='none'">
+                <img src="assets/logo.png" alt="Groovy Racoon Logo" class="logo">
                 <div class="logo-text">
                     <h1 class="logo-title">Groovy Racoon</h1>
                     <p class="tagline">Your funky guide to live music!</p>
@@ -31,15 +33,15 @@
             </div>
             <div class="nav-controls">
                 <div class="view-toggle">
-                    <button id="tableViewBtn" class="view-btn active">
-                        <span>📋</span> Table
-                    </button>
-                    <button id="calendarViewBtn" class="view-btn">
-                        <span>📅</span> Calendar
-                    </button>
+                <button id="tableViewBtn" class="view-btn active">
+                    <i class="fas fa-table"></i> Table
+                </button>
+                <button id="calendarViewBtn" class="view-btn">
+                    <i class="fas fa-calendar"></i> Calendar
+                </button>
                 </div>
                 <button id="themeToggle" class="theme-toggle" title="Toggle theme">
-                    <span class="theme-icon">🌙</span>
+                    <i class="fas fa-moon theme-icon"></i>
                 </button>
             </div>
         </div>
@@ -50,27 +52,29 @@
         <section class="filters-section">
             <div class="filters-container">
                 <div class="filter-group">
-                    <label for="filterDate">📅 Date:</label>
+                    <label for="filterDate"><i class="fas fa-calendar-alt"></i> Date:</label>
                     <input type="date" id="filterDate" class="filter-input">
                 </div>
                 <div class="filter-group">
-                    <label for="filterArtist">🎤 Artist/Event:</label>
+                    <label for="filterArtist"><i class="fas fa-microphone"></i> Artist/Event:</label>
                     <input type="text" id="filterArtist" class="filter-input" placeholder="Search...">
                 </div>
                 <div class="filter-group">
-                    <label for="filterGenre">🎵 Genre:</label>
+                    <label for="filterGenre"><i class="fas fa-music"></i> Genre:</label>
                     <input type="text" id="filterGenre" class="filter-input" placeholder="Search...">
                 </div>
                 <div class="filter-group">
-                    <label for="filterVenue">🏢 Venue:</label>
+                    <label for="filterVenue"><i class="fas fa-building"></i> Venue:</label>
                     <input type="text" id="filterVenue" class="filter-input" placeholder="Search...">
                 </div>
                 <div class="filter-group">
-                    <label for="filterPromoter">🎪 Promoter:</label>
+                    <label for="filterPromoter"><i class="fas fa-ticket-alt"></i> Promoter:</label>
                     <input type="text" id="filterPromoter" class="filter-input" placeholder="Search...">
                 </div>
-                <div class="filter-group">
-                    <button id="clearFilters" class="clear-btn">Clear All Filters</button>
+                <div class="filter-group filter-clear">
+                    <button id="clearFilters" class="clear-btn-icon" title="Clear all filters">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             </div>
         </section>
@@ -146,6 +150,7 @@
     
     <!-- FullCalendar JS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales/cs.js"></script>
     
     <!-- Custom JS -->
     <script src="js/theme.js"></script>
