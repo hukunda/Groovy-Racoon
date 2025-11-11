@@ -23,7 +23,10 @@ window.filteredConcerts = [];
 
 // DOM elements - will be initialized after DOM is ready
 let loading, error, tableViewBtn, calendarViewBtn, tableView, calendarView;
-let filterDate, filterArtist, filterGenre, filterVenue, filterPromoter, clearFiltersBtn;
+let filterDateFrom, filterDateTo, filterArtist, filterGenre, filterVenue, filterPromoter, clearFiltersBtn;
+
+// Debounce timer for live filtering
+let filterDebounceTimer = null;
 
 // Initialize DOM elements
 function initDOMElements() {
@@ -35,7 +38,8 @@ function initDOMElements() {
     calendarView = document.getElementById('calendarView');
     
     // Filter inputs
-    filterDate = document.getElementById('filterDate');
+    filterDateFrom = document.getElementById('filterDateFrom');
+    filterDateTo = document.getElementById('filterDateTo');
     filterArtist = document.getElementById('filterArtist');
     filterGenre = document.getElementById('filterGenre');
     filterVenue = document.getElementById('filterVenue');
@@ -43,7 +47,8 @@ function initDOMElements() {
     clearFiltersBtn = document.getElementById('clearFilters');
     
     console.log('DOM elements initialized:', {
-        filterDate: !!filterDate,
+        filterDateFrom: !!filterDateFrom,
+        filterDateTo: !!filterDateTo,
         filterArtist: !!filterArtist,
         filterGenre: !!filterGenre,
         filterVenue: !!filterVenue,
@@ -67,25 +72,29 @@ function setupEventListeners() {
         console.log('Calendar view button listener added');
     }
     
-    // Filter inputs
-    if (filterDate) {
-        filterDate.addEventListener('change', applyFilters);
-        console.log('Date filter listener added');
+    // Filter inputs with debounced live filtering
+    if (filterDateFrom) {
+        filterDateFrom.addEventListener('change', applyFilters);
+        console.log('Date From filter listener added');
+    }
+    if (filterDateTo) {
+        filterDateTo.addEventListener('change', applyFilters);
+        console.log('Date To filter listener added');
     }
     if (filterArtist) {
-        filterArtist.addEventListener('input', applyFilters);
+        filterArtist.addEventListener('input', debounceFilter);
         console.log('Artist filter listener added');
     }
     if (filterGenre) {
-        filterGenre.addEventListener('input', applyFilters);
+        filterGenre.addEventListener('input', debounceFilter);
         console.log('Genre filter listener added');
     }
     if (filterVenue) {
-        filterVenue.addEventListener('input', applyFilters);
+        filterVenue.addEventListener('input', debounceFilter);
         console.log('Venue filter listener added');
     }
     if (filterPromoter) {
-        filterPromoter.addEventListener('input', applyFilters);
+        filterPromoter.addEventListener('input', debounceFilter);
         console.log('Promoter filter listener added');
     }
     
@@ -291,6 +300,16 @@ async function fetchConcerts() {
 // ============================================
 
 /**
+ * Debounce filter function for live filtering
+ */
+function debounceFilter() {
+    clearTimeout(filterDebounceTimer);
+    filterDebounceTimer = setTimeout(() => {
+        applyFilters();
+    }, 300); // 300ms debounce
+}
+
+/**
  * Apply all active filters
  */
 function applyFilters() {
@@ -303,20 +322,34 @@ function applyFilters() {
     }
     
     // Get filter values safely
-    const dateValue = filterDate ? filterDate.value : '';
+    const dateFromValue = filterDateFrom ? filterDateFrom.value : '';
+    const dateToValue = filterDateTo ? filterDateTo.value : '';
     const artistValue = filterArtist ? filterArtist.value.trim() : '';
     const genreValue = filterGenre ? filterGenre.value.trim() : '';
     const venueValue = filterVenue ? filterVenue.value.trim() : '';
     const promoterValue = filterPromoter ? filterPromoter.value.trim() : '';
     
     window.filteredConcerts = window.allConcerts.filter(concert => {
-        // Date filter
-        if (dateValue) {
-            const filterDateObj = new Date(dateValue);
+        // Date range filter
+        if (dateFromValue || dateToValue) {
             if (concert.parsedDate) {
                 const concertDate = new Date(concert.parsedDate);
-                if (concertDate.toDateString() !== filterDateObj.toDateString()) {
-                    return false;
+                concertDate.setHours(0, 0, 0, 0);
+                
+                if (dateFromValue) {
+                    const fromDate = new Date(dateFromValue);
+                    fromDate.setHours(0, 0, 0, 0);
+                    if (concertDate < fromDate) {
+                        return false;
+                    }
+                }
+                
+                if (dateToValue) {
+                    const toDate = new Date(dateToValue);
+                    toDate.setHours(23, 59, 59, 999);
+                    if (concertDate > toDate) {
+                        return false;
+                    }
                 }
             } else {
                 return false;
@@ -372,7 +405,8 @@ function applyFilters() {
  * Clear all filters
  */
 function clearFilters() {
-    if (filterDate) filterDate.value = '';
+    if (filterDateFrom) filterDateFrom.value = '';
+    if (filterDateTo) filterDateTo.value = '';
     if (filterArtist) filterArtist.value = '';
     if (filterGenre) filterGenre.value = '';
     if (filterVenue) filterVenue.value = '';

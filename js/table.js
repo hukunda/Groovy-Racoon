@@ -94,39 +94,39 @@ function getGenreColor(genre) {
 
     const genreLower = genre.toLowerCase();
     
-    // Punk/Hardcore
+    // Punk/Hardcore - Muted olive green
     if (genreLower.includes('punk') || genreLower.includes('hardcore') || genreLower.includes('oi!')) {
-        return '#6B8E23'; // Olive Green
+        return '#556B2F'; // Muted Olive Green
     } 
-    // Metal
+    // Metal - Muted dark red
     else if (genreLower.includes('metal') || genreLower.includes('death') || genreLower.includes('black metal') || genreLower.includes('thrash')) {
-        return '#8B0000'; // Dark Red
+        return '#6B0000'; // Muted Dark Red
     } 
-    // Jazz
+    // Jazz - Muted gold
     else if (genreLower.includes('jazz') || genreLower.includes('blues')) {
-        return '#B8860B'; // Dark Goldenrod
+        return '#8B6914'; // Muted Dark Goldenrod
     } 
-    // Noise/Experimental
+    // Noise/Experimental - Muted slate gray
     else if (genreLower.includes('noise') || genreLower.includes('experimental') || genreLower.includes('ambient') || genreLower.includes('avant-garde')) {
-        return '#708090'; // Slate Gray
+        return '#5A5A5A'; // Muted Slate Gray
     } 
-    // Post-Punk
+    // Post-Punk - Muted indigo
     else if (genreLower.includes('post-punk') || genreLower.includes('postpunk') || genreLower.includes('post punk')) {
-        return '#4B0082'; // Indigo
+        return '#3A0062'; // Muted Indigo
     } 
-    // Indie
+    // Indie - Muted steel blue
     else if (genreLower.includes('indie') || genreLower.includes('alternative') || genreLower.includes('folk') || genreLower.includes('acoustic') || genreLower.includes('dream pop')) {
-        return '#4682B4'; // Steel Blue
+        return '#366894'; // Muted Steel Blue
     } 
-    // Electronic
+    // Electronic - Muted dark cyan
     else if (genreLower.includes('electronic') || genreLower.includes('synth') || genreLower.includes('dark synth') || genreLower.includes('techno')) {
-        return '#008B8B'; // Dark Cyan
+        return '#006B6B'; // Muted Dark Cyan
     } 
-    // Rock
+    // Rock - Primary color
     else if (genreLower.includes('rock') || genreLower.includes('psychedelic') || genreLower.includes('krautrock')) {
         return '#B22222'; // Firebrick (primary)
     } 
-    // Hip Hop
+    // Hip Hop - Primary color
     else if (genreLower.includes('hip hop') || genreLower.includes('rap')) {
         return '#B22222'; // Firebrick (primary)
     } 
