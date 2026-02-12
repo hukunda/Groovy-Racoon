@@ -33,7 +33,10 @@
             </div>
             <div class="nav-controls">
                 <div class="view-toggle">
-                <button id="tableViewBtn" class="view-btn active">
+                <button id="gridViewBtn" class="view-btn active">
+                    <i class="fas fa-th"></i> Grid
+                </button>
+                <button id="tableViewBtn" class="view-btn">
                     <i class="fas fa-table"></i> Table
                 </button>
                 <button id="calendarViewBtn" class="view-btn">
@@ -112,12 +115,20 @@
         </div>
         <div id="error" class="error" style="display: none;"></div>
 
+        <!-- Grid View -->
+        <section id="gridView" class="view-section active">
+            <div id="eventsGrid" class="events-grid">
+                <!-- Event cards will be inserted here -->
+            </div>
+        </section>
+
         <!-- Table View -->
-        <section id="tableView" class="view-section active">
+        <section id="tableView" class="view-section">
             <div class="table-container">
                 <table id="concertsTable" class="display" style="width:100%">
                     <thead>
                         <tr>
+                            <th style="width: 50px;"><i class="fas fa-check"></i></th>
                             <th>Date</th>
                             <th>Artist/Event Name</th>
                             <th>Genre</th>
@@ -202,6 +213,7 @@
     <!-- Custom JS -->
     <script src="js/theme.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/grid.js"></script>
     <script src="js/table.js"></script>
     <script src="js/facebook-api.js"></script>
     <script src="js/calendar.js"></script>

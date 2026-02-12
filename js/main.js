@@ -26,7 +26,7 @@ window.promoterLinks = {};
 window.venueLinks = {};
 
 // DOM elements - will be initialized after DOM is ready
-let loading, error, tableViewBtn, calendarViewBtn, tableView, calendarView;
+let loading, error, gridViewBtn, tableViewBtn, calendarViewBtn, gridView, tableView, calendarView;
 let filterDateFrom, filterDateTo, filterGenre, filterVenue, clearFiltersBtn, toggleFiltersBtn, filtersContainer;
 let allGigsTab, myListTab, myListPane;
 
@@ -37,8 +37,10 @@ let filterDebounceTimer = null;
 function initDOMElements() {
     loading = document.getElementById('loading');
     error = document.getElementById('error');
+    gridViewBtn = document.getElementById('gridViewBtn');
     tableViewBtn = document.getElementById('tableViewBtn');
     calendarViewBtn = document.getElementById('calendarViewBtn');
+    gridView = document.getElementById('gridView');
     tableView = document.getElementById('tableView');
     calendarView = document.getElementById('calendarView');
     
@@ -71,6 +73,10 @@ function initDOMElements() {
 
 // Set up event listeners
 function setupEventListeners() {
+    if (gridViewBtn) {
+        gridViewBtn.addEventListener('click', showGridView);
+        console.log('Grid view button listener added');
+    }
     if (tableViewBtn) {
         tableViewBtn.addEventListener('click', showTableView);
         console.log('Table view button listener added');
@@ -403,6 +409,14 @@ async function fetchConcerts() {
             await fetchVenueLinks();
             
             if (loading) loading.style.display = 'none';
+            
+            // Set default view to grid if it's active
+            if (gridView && gridView.classList.contains('active')) {
+                if (typeof renderGridView === 'function') {
+                    renderGridView();
+                }
+            }
+            
             applyFilters();
             return; // Success!
             
@@ -511,6 +525,9 @@ function applyFilters() {
     }
 
     // Update views
+    if (typeof renderGridView === 'function') {
+        renderGridView();
+    }
     if (typeof renderTableView === 'function') {
         renderTableView();
     }
@@ -572,12 +589,20 @@ function switchTab(tab) {
         if (allGigsTab) allGigsTab.classList.add('active');
         if (myListTab) myListTab.classList.remove('active');
         if (myListPane) myListPane.style.display = 'none';
-        if (tableView) tableView.style.display = 'block';
-        if (calendarView) calendarView.style.display = calendarView.classList.contains('active') ? 'block' : 'none';
+        
+        // Show the active view (grid, table, or calendar)
+        if (gridView && gridView.classList.contains('active')) {
+            gridView.style.display = 'block';
+        } else if (tableView && tableView.classList.contains('active')) {
+            tableView.style.display = 'block';
+        } else if (calendarView && calendarView.classList.contains('active')) {
+            calendarView.style.display = 'block';
+        }
     } else if (tab === 'myList') {
         if (allGigsTab) allGigsTab.classList.remove('active');
         if (myListTab) myListTab.classList.add('active');
         if (myListPane) myListPane.style.display = 'block';
+        if (gridView) gridView.style.display = 'none';
         if (tableView) tableView.style.display = 'none';
         if (calendarView) calendarView.style.display = 'none';
         // Update My List display
@@ -592,10 +617,40 @@ function switchTab(tab) {
 // ============================================
 
 /**
+ * Switch to grid view
+ */
+function showGridView() {
+    console.log('Switching to grid view');
+    if (tableView) {
+        tableView.classList.remove('active');
+        tableView.style.display = 'none';
+    }
+    if (calendarView) {
+        calendarView.classList.remove('active');
+        calendarView.style.display = 'none';
+    }
+    if (gridView) {
+        gridView.classList.add('active');
+        gridView.style.display = 'block';
+    }
+    if (gridViewBtn) gridViewBtn.classList.add('active');
+    if (tableViewBtn) tableViewBtn.classList.remove('active');
+    if (calendarViewBtn) calendarViewBtn.classList.remove('active');
+    // Re-render grid if data is available
+    if (typeof renderGridView === 'function' && window.filteredConcerts) {
+        renderGridView();
+    }
+}
+
+/**
  * Switch to table view
  */
 function showTableView() {
     console.log('Switching to table view');
+    if (gridView) {
+        gridView.classList.remove('active');
+        gridView.style.display = 'none';
+    }
     if (calendarView) {
         calendarView.classList.remove('active');
         calendarView.style.display = 'none';
@@ -604,6 +659,7 @@ function showTableView() {
         tableView.classList.add('active');
         tableView.style.display = 'block';
     }
+    if (gridViewBtn) gridViewBtn.classList.remove('active');
     if (tableViewBtn) tableViewBtn.classList.add('active');
     if (calendarViewBtn) calendarViewBtn.classList.remove('active');
     // Re-render table if data is available
@@ -617,6 +673,10 @@ function showTableView() {
  */
 function showCalendarView() {
     console.log('Switching to calendar view');
+    if (gridView) {
+        gridView.classList.remove('active');
+        gridView.style.display = 'none';
+    }
     if (tableView) {
         tableView.classList.remove('active');
         tableView.style.display = 'none';
@@ -626,6 +686,7 @@ function showCalendarView() {
         calendarView.style.display = 'block';
         console.log('Calendar view displayed');
     }
+    if (gridViewBtn) gridViewBtn.classList.remove('active');
     if (tableViewBtn) tableViewBtn.classList.remove('active');
     if (calendarViewBtn) calendarViewBtn.classList.add('active');
     
