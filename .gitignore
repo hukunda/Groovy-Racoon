@@ -21,3 +21,14 @@ npm-debug.log*
 # Temporary files
 *.tmp
 *.temp
+
+# Automation files (not needed for web app deployment)
+AI_DATA_COLLECTION.md
+AUTOMATION_SETUP.md
+DAILY_AI_PROMPT.txt
+FIX_TRIGGER_ERROR.md
+GOOGLE_AI_SETUP.md
+QUICK_START_AUTOMATION.md
+google-apps-script-ai-collector-google.js
+google-apps-script-ai-collector.js
+RACCOON_SUGGESTIONS_FEATURE.md
