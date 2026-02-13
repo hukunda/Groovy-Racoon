@@ -2353,11 +2353,18 @@ h1, h2, h3, h4, h5, h6 {
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
-        font-size: 14px;
+        font-size: 12px;
+        padding: 6px 8px;
+        height: 32px;
+        min-width: 0;
     }
     
     .filter-input[type="date"]::-webkit-calendar-picker-indicator {
         margin-left: auto;
+        padding: 2px;
+        cursor: pointer;
+        width: 20px;
+        height: 20px;
     }
     
     .filters-header {
