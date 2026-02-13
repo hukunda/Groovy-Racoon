@@ -489,12 +489,15 @@ async function createEventCardFast(concert) {
 async function loadImageInBackground(card, artistName) {
     try {
         const img = card.querySelector('.event-card-image');
-        if (!img) return;
+        const imageContainer = card.querySelector('.event-card-image-container');
+        if (!img || !imageContainer) {
+            return;
+        }
         
         // Get real image (with timeout)
         const realImageUrl = await Promise.race([
             getArtistImage(artistName),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 4000))
         ]);
         
         // Only update if we got a different (non-placeholder) image
@@ -502,16 +505,23 @@ async function loadImageInBackground(card, artistName) {
             // Directly update the image - browser will handle loading
             img.src = realImageUrl;
             img.onerror = () => {
-                // If real image fails, keep placeholder
-                img.src = getPlaceholderImage(artistName);
+                // If real image fails, remove image container entirely
+                if (imageContainer) {
+                    imageContainer.style.display = 'none';
+                }
             };
         } else {
-            // If we got a placeholder, make sure it's set
-            img.src = getPlaceholderImage(artistName);
+            // No real image found, remove image container
+            if (imageContainer) {
+                imageContainer.style.display = 'none';
+            }
         }
     } catch (error) {
-        // Silently fail - placeholder is already showing
-        console.log(`Background image load failed for ${artistName}:`, error.message);
+        // Remove image container if loading fails
+        const imageContainer = card.querySelector('.event-card-image-container');
+        if (imageContainer) {
+            imageContainer.style.display = 'none';
+        }
     }
 }
 

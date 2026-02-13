@@ -141,6 +141,25 @@ function setupEventListeners() {
         console.log('Clear filters button listener added');
     }
     
+    // Mobile menu toggle
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const navControls = document.getElementById('navControls');
+    if (mobileMenuToggle && navControls) {
+        mobileMenuToggle.addEventListener('click', () => {
+            navControls.classList.toggle('mobile-menu-open');
+            const icon = mobileMenuToggle.querySelector('i');
+            if (icon) {
+                if (navControls.classList.contains('mobile-menu-open')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            }
+        });
+    }
+    
     // Tab buttons
     if (allGigsTab) {
         allGigsTab.addEventListener('click', () => switchTab('allGigs'));
@@ -592,10 +611,37 @@ async function fetchConcerts() {
     // Filters will default to current month
     applyFilters();
     
-    // Set default view to table (table view is now default)
-    if (tableView && tableView.classList.contains('active')) {
-        if (typeof renderTableView === 'function') {
-            setTimeout(() => renderTableView(), 100);
+    // Set default view based on screen size
+    // Mobile: Cards first, Desktop: Table first
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        // Mobile: Show cards by default
+        if (gridView && gridViewBtn) {
+            gridView.classList.add('active');
+            gridView.style.display = 'block';
+            if (tableView) {
+                tableView.classList.remove('active');
+                tableView.style.display = 'none';
+            }
+            if (calendarView) {
+                calendarView.classList.remove('active');
+                calendarView.style.display = 'none';
+            }
+            gridViewBtn.classList.add('active');
+            if (tableViewBtn) tableViewBtn.classList.remove('active');
+            if (calendarViewBtn) calendarViewBtn.classList.remove('active');
+            
+            if (typeof renderGridView === 'function') {
+                setTimeout(() => renderGridView(), 100);
+            }
+        }
+    } else {
+        // Desktop: Show table by default
+        if (tableView && tableView.classList.contains('active')) {
+            if (typeof renderTableView === 'function') {
+                setTimeout(() => renderTableView(), 100);
+            }
         }
     }
 }

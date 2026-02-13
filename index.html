@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Groovy Racoon - Underground sounds. Raw energy. Real venues.</title>
+    <title>Groovy Racoon - Trash is trash, nom nom 🦝</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,19 +31,22 @@
                 </div>
                 <div class="logo-text">
                     <h1 class="logo-title">Groovy Racoon</h1>
-                    <p class="tagline">Underground sounds. Raw energy. Real venues.</p>
+                    <p class="tagline">Trash is trash, nom nom 🦝</p>
                 </div>
             </a>
-            <div class="nav-controls">
+            <button id="mobileMenuToggle" class="mobile-menu-toggle" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="nav-controls" id="navControls">
                 <div class="view-toggle">
                 <button id="tableViewBtn" class="view-btn active">
-                    <i class="fas fa-table"></i> Table
+                    <i class="fas fa-table"></i> <span class="btn-text">Table</span>
                 </button>
                 <button id="gridViewBtn" class="view-btn">
-                    <i class="fas fa-th"></i> Card
+                    <i class="fas fa-th"></i> <span class="btn-text">Card</span>
                 </button>
                 <button id="calendarViewBtn" class="view-btn">
-                    <i class="fas fa-calendar"></i> Calendar
+                    <i class="fas fa-calendar"></i> <span class="btn-text">Calendar</span>
                 </button>
                 </div>
                 <button id="themeToggle" class="theme-toggle" title="Toggle theme">
@@ -187,25 +190,10 @@
 
     <footer class="footer">
         <div class="footer-content">
-            <div class="footer-section">
-                <div class="footer-logo">
-                    <img src="assets/logo.png" alt="Groovy Racoon" class="footer-logo-img">
-                    <h3>Groovy Racoon</h3>
-                </div>
-                <p>Underground sounds. Raw energy. Real venues.</p>
-                <p class="racoon-tagline">Digging through the underground scene, one gig at a time.</p>
+            <div class="footer-logo">
+                <img src="assets/logo.png" alt="Groovy Racoon" class="footer-logo-img">
             </div>
-            <div class="footer-section" style="display: none;">
-                <h4>Connect</h4>
-                <div class="social-links">
-                    <a href="#" class="social-link glitch-link" target="_blank" rel="noopener noreferrer">GitHub</a>
-                    <a href="#" class="social-link glitch-link" target="_blank" rel="noopener noreferrer">Twitter</a>
-                    <a href="#" class="social-link glitch-link" target="_blank" rel="noopener noreferrer">Instagram</a>
-                </div>
-            </div>
-            <div class="footer-section">
-                <p class="attribution">Made with ❤️ for underground music lovers</p>
-            </div>
+            <p class="attribution">Made with ❤️ for underground music lovers</p>
         </div>
     </footer>
 
