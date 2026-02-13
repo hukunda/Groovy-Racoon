@@ -2238,8 +2238,10 @@ h1, h2, h3, h4, h5, h6 {
     }
 
     .tagline {
-        font-size: 0.75em;
-        display: none;
+        font-size: 0.7em;
+        display: block;
+        line-height: 1.2;
+        margin-top: 2px;
     }
     
     .mobile-menu-toggle {
