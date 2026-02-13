@@ -133,7 +133,30 @@ function setupEventListeners() {
         console.log('Venue filter listener added');
     }
     
-    // Filters are now always visible - no toggle button needed
+    // Mobile filter toggle
+    const toggleFiltersBtn = document.getElementById('toggleFiltersBtn');
+    const filtersContainer = document.getElementById('filtersContainer');
+    const filtersToggleIcon = document.getElementById('filtersToggleIcon');
+    
+    if (toggleFiltersBtn && filtersContainer) {
+        // Check if mobile view
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            // Start with filters collapsed on mobile
+            filtersContainer.classList.remove('filters-open');
+        }
+        
+        toggleFiltersBtn.addEventListener('click', () => {
+            filtersContainer.classList.toggle('filters-open');
+            if (filtersToggleIcon) {
+                if (filtersContainer.classList.contains('filters-open')) {
+                    filtersToggleIcon.style.transform = 'rotate(180deg)';
+                } else {
+                    filtersToggleIcon.style.transform = 'rotate(0deg)';
+                }
+            }
+        });
+    }
     
     // Clear filters button
     if (clearFiltersBtn) {
