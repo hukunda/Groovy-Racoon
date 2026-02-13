@@ -25,16 +25,25 @@ function initCalendar() {
     }
 
     try {
+        // Check if FullCalendar is loaded (v6 uses global FullCalendar)
+        if (typeof FullCalendar === 'undefined' && typeof window.FullCalendar === 'undefined') {
+            console.error('FullCalendar is not loaded. Check CDN links.');
+            console.error('Available globals:', Object.keys(window).filter(k => k.toLowerCase().includes('calendar')));
+            return;
+        }
+        
         const events = getCalendarEvents();
         console.log('Initializing calendar with', events.length, 'events');
         
-        calendar = new FullCalendar.Calendar(calendarEl, {
+        // Use FullCalendar from window if available
+        const FC = window.FullCalendar || FullCalendar;
+        calendar = new FC.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
-            locale: 'cs',
+            locale: 'cs', // Czech locale
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: 'dayGridMonth'
+                right: ''
             },
             events: events,
             eventClick: function(info) {
@@ -85,23 +94,46 @@ function initCalendar() {
  * Convert filtered concerts to FullCalendar events
  */
 function getCalendarEvents() {
-    if (!window.filteredConcerts) return [];
+    if (!window.filteredConcerts) {
+        console.log('No filtered concerts available');
+        return [];
+    }
 
-    return window.filteredConcerts
-        .filter(concert => concert.parsedDate)
+    console.log(`Converting ${window.filteredConcerts.length} concerts to calendar events`);
+    
+    const events = window.filteredConcerts
+        .filter(concert => {
+            if (!concert.parsedDate) {
+                console.log('Concert missing parsedDate:', concert);
+                return false;
+            }
+            return true;
+        })
         .map(concert => {
             const date = new Date(concert.parsedDate);
+            
+            // Check if date is valid
+            if (isNaN(date.getTime())) {
+                console.warn('Invalid date for concert:', concert);
+                return null;
+            }
+            
             const color = getGenreColor(concert.genre);
 
-            // Create title with genre and artist
+            // Create title - just use artist name (FullCalendar will handle display)
             let title = concert.artist || 'Untitled Event';
-            if (concert.genre) {
-                title = `${concert.genre}\n${title}`;
-            }
+            
+            // Format date as YYYY-MM-DD for FullCalendar
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+            
+            console.log(`Creating event: ${title} on ${dateStr}`);
             
             return {
                 title: title,
-                start: date.toISOString().split('T')[0],
+                start: dateStr,
                 extendedProps: {
                     genre: concert.genre,
                     venue: concert.venue,
@@ -115,7 +147,11 @@ function getCalendarEvents() {
                 borderColor: color,
                 textColor: '#FFFFFF'
             };
-        });
+        })
+        .filter(event => event !== null); // Remove null events
+    
+    console.log(`Created ${events.length} calendar events`);
+    return events;
 }
 
 /**

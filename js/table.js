@@ -46,15 +46,18 @@ function renderTableView() {
         checkbox.checked = isInList;
         checkbox.className = 'event-checkbox';
         checkbox.dataset.index = index;
+        checkbox.title = isInList ? 'Remove from My List' : 'Add to My List';
         checkbox.addEventListener('change', function() {
             if (this.checked) {
                 if (typeof addToMyList === 'function') {
                     addToMyList(concert);
                 }
+                this.title = 'Remove from My List';
             } else {
                 if (typeof removeFromMyList === 'function') {
                     removeFromMyList(concert);
                 }
+                this.title = 'Add to My List';
             }
         });
         
@@ -62,30 +65,23 @@ function renderTableView() {
         checkboxCell.style.textAlign = 'center';
         checkboxCell.appendChild(checkbox);
         
-        // Event name - clickable to event page
-        const eventUrl = typeof getEventPageUrl === 'function' ? getEventPageUrl(concert) : '#';
-        const eventNameHtml = `<a href="${eventUrl}" class="glitch-link" style="font-weight: 600; color: var(--primary);">${escapeHtml(concert.artist)}</a>`;
+        // Event name - not clickable
+        const eventNameHtml = `<span style="font-weight: 600; color: var(--text-primary);">${escapeHtml(concert.artist)}</span>`;
         
-        // Venue - clickable if link exists
+        // Venue - not clickable
         let venueHtml = escapeHtml(concert.venue);
-        if (typeof getVenueLink === 'function') {
-            const venueLink = getVenueLink(concert.venue);
-            if (venueLink) {
-                venueHtml = `<a href="${escapeHtml(venueLink)}" class="glitch-link" target="_blank" rel="noopener noreferrer">${escapeHtml(concert.venue)}</a>`;
-            }
-        }
         
-        // Promoter - clickable if link exists
+        // Promoter - not clickable
         let promoterHtml = escapeHtml(concert.promoter);
-        if (typeof getPromoterLink === 'function') {
-            const promoterLink = getPromoterLink(concert.promoter);
-            if (promoterLink) {
-                promoterHtml = `<a href="${escapeHtml(promoterLink)}" class="glitch-link" target="_blank" rel="noopener noreferrer">${escapeHtml(concert.promoter)}</a>`;
-            }
-        }
         
         const dateCell = document.createElement('td');
-        dateCell.textContent = concert.date;
+        // Format date for better readability
+        if (concert.parsedDate) {
+            const date = new Date(concert.parsedDate);
+            dateCell.innerHTML = `<span class="table-date">${formatTableDate(date)}</span>`;
+        } else {
+            dateCell.textContent = concert.date || 'TBA';
+        }
         
         const nameCell = document.createElement('td');
         nameCell.innerHTML = `<strong>${eventNameHtml}</strong>`;
@@ -157,7 +153,9 @@ function renderTableView() {
                 columnDefs: [
                     { orderable: false, targets: [0] }, // Checkbox column not sortable
                     { orderable: true, targets: [1, 2, 3, 4, 5] },
-                    { orderable: false, targets: [6, 7] } // Links columns not sortable
+                    { orderable: false, targets: [6, 7] }, // Links columns not sortable
+                    { width: "50px", targets: [0] }, // Checkbox column
+                    { width: "25%", targets: [2] } // Artist/Event name column - wider
                 ]
             });
             console.log('DataTable initialized successfully');
@@ -227,6 +225,20 @@ function getContrastColor(hexColor) {
     
     // Return black for light colors, white for dark colors
     return luminance > 0.5 ? '#000000' : '#FFFFFF';
+}
+
+/**
+ * Format date for table display (readable format)
+ */
+function formatTableDate(date) {
+    if (!date || isNaN(date.getTime())) return 'TBA';
+    
+    const day = date.getDate();
+    const month = date.toLocaleDateString('en-US', { month: 'short' });
+    const year = date.getFullYear();
+    const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
+    
+    return `<span class="date-day">${day}</span> <span class="date-month">${month}</span> <span class="date-year">${year}</span><br><span class="date-weekday">${dayOfWeek}</span>`;
 }
 
 /**

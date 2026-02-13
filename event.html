@@ -8,7 +8,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Freckle+Face&family=Stack+Sans+Notch&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Signika:wght@300;400;500;600;700&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -128,13 +128,13 @@
     <div class="noise-overlay"></div>
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo-section">
+            <a href="index.html" class="logo-section" style="text-decoration: none; color: inherit;">
                 <img src="assets/logo.png" alt="Groovy Racoon Logo" class="logo">
                 <div class="logo-text">
                     <h1 class="logo-title">Groovy Racoon</h1>
-                    <p class="tagline">Your funky guide to live music!</p>
+                    <p class="tagline">Underground sounds. Raw energy. Real venues.</p>
                 </div>
-            </div>
+            </a>
             <div class="nav-controls">
                 <button id="themeToggle" class="theme-toggle" title="Toggle theme">
                     <i class="fas fa-moon theme-icon"></i>
@@ -232,11 +232,17 @@
                 return;
             }
             
-            // Wait for concerts to load
+            // Wait for concerts to load (with timeout)
             let attempts = 0;
-            while ((!window.allConcerts || window.allConcerts.length === 0) && attempts < 50) {
+            const maxAttempts = 30; // 3 seconds max wait
+            while ((!window.allConcerts || window.allConcerts.length === 0) && attempts < maxAttempts) {
                 await new Promise(resolve => setTimeout(resolve, 100));
                 attempts++;
+            }
+            
+            // If still not loaded, try to fetch directly
+            if ((!window.allConcerts || window.allConcerts.length === 0) && typeof fetchConcerts === 'function') {
+                await fetchConcerts();
             }
             
             if (!window.allConcerts || window.allConcerts.length === 0) {
@@ -244,18 +250,41 @@
                 return;
             }
             
-            // Find event by matching the ID
+            // Find event by matching the ID (support both old btoa and new encodeURIComponent formats)
             let foundEvent = null;
             for (const concert of window.allConcerts) {
-                const testId = btoa(JSON.stringify({
-                    date: concert.date,
-                    artist: concert.artist,
-                    venue: concert.venue
-                })).replace(/[+/=]/g, '').substring(0, 20);
-                
-                if (testId === eventId) {
-                    foundEvent = concert;
-                    break;
+                try {
+                    // Try new format first
+                    const testId = encodeURIComponent(JSON.stringify({
+                        date: concert.date,
+                        artist: concert.artist,
+                        venue: concert.venue
+                    })).replace(/[!'()*]/g, '');
+                    
+                    if (testId === eventId || decodeURIComponent(eventId) === JSON.stringify({
+                        date: concert.date,
+                        artist: concert.artist,
+                        venue: concert.venue
+                    })) {
+                        foundEvent = concert;
+                        break;
+                    }
+                } catch (e) {
+                    // Try old btoa format for backwards compatibility
+                    try {
+                        const testId = btoa(JSON.stringify({
+                            date: concert.date,
+                            artist: concert.artist,
+                            venue: concert.venue
+                        })).replace(/[+/=]/g, '').substring(0, 20);
+                        
+                        if (testId === eventId) {
+                            foundEvent = concert;
+                            break;
+                        }
+                    } catch (e2) {
+                        // Skip this concert
+                    }
                 }
             }
             

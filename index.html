@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Groovy Racoon - Your funky guide to live music!</title>
+    <title>Groovy Racoon - Underground sounds. Raw energy. Real venues.</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Freckle+Face&family=Stack+Sans+Notch&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Signika:wght@300;400;500;600;700&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- FullCalendar CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" crossorigin="anonymous">
     
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
@@ -24,20 +24,23 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo-section">
-                <img src="assets/logo.png" alt="Groovy Racoon Logo" class="logo">
+            <a href="index.html" class="logo-section" style="text-decoration: none; color: inherit;">
+                <div class="logo-wrapper">
+                    <img src="assets/logo.png" alt="Groovy Racoon Logo" class="logo">
+                    <div class="racoon-decoration"></div>
+                </div>
                 <div class="logo-text">
                     <h1 class="logo-title">Groovy Racoon</h1>
-                    <p class="tagline">Your funky guide to live music!</p>
+                    <p class="tagline">Underground sounds. Raw energy. Real venues.</p>
                 </div>
-            </div>
+            </a>
             <div class="nav-controls">
                 <div class="view-toggle">
-                <button id="gridViewBtn" class="view-btn active">
-                    <i class="fas fa-th"></i> Grid
-                </button>
-                <button id="tableViewBtn" class="view-btn">
+                <button id="tableViewBtn" class="view-btn active">
                     <i class="fas fa-table"></i> Table
+                </button>
+                <button id="gridViewBtn" class="view-btn">
+                    <i class="fas fa-th"></i> Card
                 </button>
                 <button id="calendarViewBtn" class="view-btn">
                     <i class="fas fa-calendar"></i> Calendar
@@ -53,31 +56,33 @@
     <main class="main-content">
         <!-- Filters Section -->
         <section class="filters-section">
-            <div class="filters-header">
-                <button id="toggleFilters" class="toggle-filters-btn">
-                    <i class="fas fa-filter"></i> Filters
-                    <i class="fas fa-chevron-down" id="filterToggleIcon"></i>
-                </button>
-                <button id="clearFilters" class="clear-filters-btn" title="Clear all filters">
-                    <i class="fas fa-times"></i> Reset
-                </button>
-            </div>
-            <div class="filters-container" id="filtersContainer" style="display: none;">
+            <div class="filters-container" id="filtersContainer">
                 <div class="filter-group">
-                    <label for="filterDateFrom"><i class="fas fa-calendar-alt"></i> Date From:</label>
+                    <label for="filterMonth"><i class="fas fa-calendar"></i> Month/Year</label>
+                    <select id="filterMonth" class="filter-input">
+                        <option value="">All Months</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterDateFrom"><i class="fas fa-calendar-alt"></i> Date From</label>
                     <input type="date" id="filterDateFrom" class="filter-input">
                 </div>
                 <div class="filter-group">
-                    <label for="filterDateTo"><i class="fas fa-calendar-alt"></i> Date To:</label>
+                    <label for="filterDateTo"><i class="fas fa-calendar-alt"></i> Date To</label>
                     <input type="date" id="filterDateTo" class="filter-input">
                 </div>
                 <div class="filter-group">
-                    <label for="filterGenre"><i class="fas fa-music"></i> Genre:</label>
+                    <label for="filterGenre"><i class="fas fa-music"></i> Genre</label>
                     <input type="text" id="filterGenre" class="filter-input" placeholder="Search...">
                 </div>
                 <div class="filter-group">
-                    <label for="filterVenue"><i class="fas fa-building"></i> Venue:</label>
+                    <label for="filterVenue"><i class="fas fa-building"></i> Venue</label>
                     <input type="text" id="filterVenue" class="filter-input" placeholder="Search...">
+                </div>
+                <div class="filter-group filter-group-reset">
+                    <button id="clearFilters" class="clear-filters-btn" title="Clear all filters">
+                        <i class="fas fa-times"></i> Reset
+                    </button>
                 </div>
             </div>
         </section>
@@ -116,14 +121,14 @@
         <div id="error" class="error" style="display: none;"></div>
 
         <!-- Grid View -->
-        <section id="gridView" class="view-section active">
+        <section id="gridView" class="view-section">
             <div id="eventsGrid" class="events-grid">
                 <!-- Event cards will be inserted here -->
             </div>
         </section>
 
         <!-- Table View -->
-        <section id="tableView" class="view-section">
+        <section id="tableView" class="view-section active">
             <div class="table-container">
                 <table id="concertsTable" class="display" style="width:100%">
                     <thead>
@@ -183,10 +188,14 @@
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
-                <h3>Groovy Racoon</h3>
-                <p>Your funky guide to live music!</p>
+                <div class="footer-logo">
+                    <img src="assets/logo.png" alt="Groovy Racoon" class="footer-logo-img">
+                    <h3>Groovy Racoon</h3>
+                </div>
+                <p>Underground sounds. Raw energy. Real venues.</p>
+                <p class="racoon-tagline">Digging through the underground scene, one gig at a time.</p>
             </div>
-            <div class="footer-section">
+            <div class="footer-section" style="display: none;">
                 <h4>Connect</h4>
                 <div class="social-links">
                     <a href="#" class="social-link glitch-link" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -207,11 +216,12 @@
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     
     <!-- FullCalendar JS -->
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales/cs.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js" crossorigin="anonymous"></script>
     
     <!-- Custom JS -->
     <script src="js/theme.js"></script>
+    <script src="js/sheet-helper.js"></script>
     <script src="js/main.js"></script>
     <script src="js/grid.js"></script>
     <script src="js/table.js"></script>

@@ -3,21 +3,44 @@
 // ============================================
 
 // Google Sheets configuration
-const SPREADSHEET_ID = '1J6aInjzgf-_7PZO6I8TG4Ghvnx9e3Z_E5rVYImY2BC0';
-const GID = '1445856825'; // Main events sheet
-const PROMOTERS_GID = '0'; // Promoters tab GID (update if different)
-const VENUES_GID = '0'; // Venues tab GID (update if different)
+// ============================================
+// OPTION 1: Google Apps Script Backend (RECOMMENDED - No CORS issues!)
+// ============================================
+// After setting up Google Apps Script (see BACKEND_SETUP.md), paste your Web App URL here:
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz_-oGVKFBcoNIFhvpzZB5m6z7PW7agbQJuP8ADnKFRIraXw1XggRNE8BRxUlpRijg2kQ/exec'; // Paste your Web App URL here after setup
+// Example: 'https://script.google.com/macros/s/AKfycby.../exec'
 
-// Try multiple URL formats and CORS proxies
-const CSV_URLS = [
-    // Direct export URL
-    `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${GID}`,
-    // Alternative format
-    `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}`,
-    // CORS proxy options (public proxies)
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${GID}`)}`,
-    `https://corsproxy.io/?${encodeURIComponent(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${GID}`)}`
-];
+// Single sheet configuration - all gigs are in one sheet
+// No need to configure multiple sheets anymore!
+
+// ============================================
+// OPTION 2: Direct Google Sheets (Fallback - has CORS issues)
+// ============================================
+const PUBLISHED_SHEET_ID = '2PACX-1vQpT2Xd6Z2X_cjVHt1MVq_FybDvSUIQ5Gm2lQz9dZOZtZx_P3qgOxiNqf9WhwoguOk06lebCl0ZXEA-';
+const MAIN_GID = '0'; // Main sheet GID (only needed for fallback - use 0 for first sheet)
+const PROMOTERS_GID = '0';
+const VENUES_GID = '0';
+
+/**
+ * Get CSV URLs for the single sheet
+ * Uses Google Apps Script if available, otherwise falls back to direct URLs
+ */
+function getCSVUrls() {
+    // If Google Apps Script is set up, use it (no CORS issues!)
+    if (GOOGLE_APPS_SCRIPT_URL) {
+        return [
+            GOOGLE_APPS_SCRIPT_URL, // No parameters needed - single sheet
+        ];
+    }
+    
+    // Fallback: Try direct Google Sheets URLs (may have CORS issues)
+    return [
+        `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_SHEET_ID}/pub?output=csv&gid=${MAIN_GID}`,
+        `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_SHEET_ID}/pub?gid=${MAIN_GID}&single=true&output=csv`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://docs.google.com/spreadsheets/d/e/${PUBLISHED_SHEET_ID}/pub?output=csv&gid=${MAIN_GID}`)}`,
+        `https://corsproxy.io/?${encodeURIComponent(`https://docs.google.com/spreadsheets/d/e/${PUBLISHED_SHEET_ID}/pub?output=csv&gid=${MAIN_GID}`)}`,
+    ];
+}
 
 // Global state (explicitly on window for cross-file access)
 window.allConcerts = [];
@@ -27,7 +50,7 @@ window.venueLinks = {};
 
 // DOM elements - will be initialized after DOM is ready
 let loading, error, gridViewBtn, tableViewBtn, calendarViewBtn, gridView, tableView, calendarView;
-let filterDateFrom, filterDateTo, filterGenre, filterVenue, clearFiltersBtn, toggleFiltersBtn, filtersContainer;
+let filterMonth, filterDateFrom, filterDateTo, filterGenre, filterVenue, clearFiltersBtn, filtersContainer;
 let allGigsTab, myListTab, myListPane;
 
 // Debounce timer for live filtering
@@ -45,12 +68,12 @@ function initDOMElements() {
     calendarView = document.getElementById('calendarView');
     
     // Filter inputs
+    filterMonth = document.getElementById('filterMonth');
     filterDateFrom = document.getElementById('filterDateFrom');
     filterDateTo = document.getElementById('filterDateTo');
     filterGenre = document.getElementById('filterGenre');
     filterVenue = document.getElementById('filterVenue');
     clearFiltersBtn = document.getElementById('clearFilters');
-    toggleFiltersBtn = document.getElementById('toggleFilters');
     filtersContainer = document.getElementById('filtersContainer');
     
     // Tabs
@@ -63,8 +86,10 @@ function initDOMElements() {
         filterDateTo: !!filterDateTo,
         filterGenre: !!filterGenre,
         filterVenue: !!filterVenue,
+        gridViewBtn: !!gridViewBtn,
         tableViewBtn: !!tableViewBtn,
-        calendarViewBtn: !!calendarViewBtn
+        calendarViewBtn: !!calendarViewBtn,
+        filtersContainer: !!filtersContainer
     });
     
     // Set up event listeners
@@ -87,6 +112,10 @@ function setupEventListeners() {
     }
     
     // Filter inputs with debounced live filtering
+    if (filterMonth) {
+        filterMonth.addEventListener('change', applyFilters);
+        console.log('Month filter listener added');
+    }
     if (filterDateFrom) {
         filterDateFrom.addEventListener('change', applyFilters);
         console.log('Date From filter listener added');
@@ -104,26 +133,7 @@ function setupEventListeners() {
         console.log('Venue filter listener added');
     }
     
-    // Filter toggle button
-    if (toggleFiltersBtn) {
-        toggleFiltersBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleFilters();
-        });
-        console.log('Toggle filters button listener added');
-    } else {
-        console.error('Toggle filters button not found!');
-    }
-    
-    // Ensure filters start collapsed
-    if (filtersContainer) {
-        filtersContainer.classList.remove('show');
-        const filtersSection = filtersContainer.closest('.filters-section');
-        if (filtersSection) {
-            filtersSection.classList.remove('filters-open');
-        }
-    }
+    // Filters are now always visible - no toggle button needed
     
     // Clear filters button
     if (clearFiltersBtn) {
@@ -149,33 +159,68 @@ function setupEventListeners() {
  */
 function parseCSV(csvText) {
     const lines = csvText.split('\n').filter(line => line.trim());
-    if (lines.length < 2) return [];
+    if (lines.length < 2) {
+        console.warn('CSV has less than 2 lines');
+        return [];
+    }
 
-    // Parse header
+    // Parse header (if present, but we'll use position-based mapping)
     const headers = parseCSVLine(lines[0]);
+    console.log('CSV Headers:', headers);
+    console.log('Number of header columns:', headers.length);
+    console.log('Using structure: A=Date, B=Name, C=Style, D=Place, E=Type, F=Link');
     
     // Parse data rows
     const concerts = [];
-    for (let i = 1; i < lines.length; i++) {
+    // Start from row 1 (skip header) or row 0 if no header
+    // Check if first row looks like a header (contains "date", "name", "style", etc.)
+    const firstRowLower = lines[0].toLowerCase();
+    const hasHeader = firstRowLower.includes('date') || firstRowLower.includes('datum') || 
+                      firstRowLower.includes('name') || firstRowLower.includes('název') ||
+                      firstRowLower.includes('style') || firstRowLower.includes('žánr') ||
+                      firstRowLower.includes('place') || firstRowLower.includes('místo');
+    const startRow = hasHeader ? 1 : 0;
+    
+    console.log(`Starting from row ${startRow} (header detected: ${hasHeader})`);
+    
+    for (let i = startRow; i < lines.length; i++) {
         const values = parseCSVLine(lines[i]);
-        if (values.length < headers.length) continue;
         
+        // Skip empty rows
+        if (values.every(v => !v || !v.trim())) continue;
+        
+        // Need at least date and name (columns A and B)
+        if (values.length < 2) continue;
+        
+        // Map columns based on spreadsheet structure (e.g., "List 14"):
+        // A: Date - values[0]
+        // B: Name (Artist/Event) - values[1]
+        // C: Style (Genre) - values[2]
+        // D: Place (Venue) - values[3]
+        // E: Type - values[4] (may be promoter or event type)
+        // F: Link (Ticket/Event link) - values[5]
         const concert = {
             date: values[0]?.trim() || '',
             artist: values[1]?.trim() || '',
             genre: values[2]?.trim() || '',
             venue: values[3]?.trim() || '',
-            promoter: values[4]?.trim() || '',
+            promoter: values[4]?.trim() || '', // Type column
             ticketLink: values[5]?.trim() || '',
-            fbLink: values[6]?.trim() || ''
+            fbLink: '' // No Facebook link column in this structure
         };
 
         // Only add concerts with at least a date and artist
         if (concert.date && concert.artist) {
             concerts.push(concert);
+        } else {
+            // Log skipped rows for debugging
+            if (i <= 5) {
+                console.log(`Skipped row ${i}:`, { date: concert.date, artist: concert.artist });
+            }
         }
     }
 
+    console.log(`Parsed ${concerts.length} valid concerts from ${lines.length - 1} rows`);
     return concerts;
 }
 
@@ -210,6 +255,19 @@ function parseCSVLine(line) {
 function parseDate(dateStr) {
     if (!dateStr) return null;
     
+    // If it's already a Date object, return it
+    if (dateStr instanceof Date) {
+        return dateStr;
+    }
+    
+    // If it's a string that looks like a Date object string, try to parse it
+    if (typeof dateStr === 'string' && dateStr.includes('GMT')) {
+        const parsed = new Date(dateStr);
+        if (!isNaN(parsed.getTime())) {
+            return parsed;
+        }
+    }
+    
     // Try different date formats
     // Format: "1. 11. 2025" or "1.11.2025"
     const cleaned = dateStr.replace(/\s+/g, ' ').trim();
@@ -223,6 +281,21 @@ function parseDate(dateStr) {
         if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
             return new Date(year, month, day);
         }
+    }
+    
+    // Try ISO format (YYYY-MM-DD)
+    const isoMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoMatch) {
+        const year = parseInt(isoMatch[1], 10);
+        const month = parseInt(isoMatch[2], 10) - 1;
+        const day = parseInt(isoMatch[3], 10);
+        return new Date(year, month, day);
+    }
+    
+    // Last resort: try Date constructor
+    const parsed = new Date(dateStr);
+    if (!isNaN(parsed.getTime())) {
+        return parsed;
     }
     
     return null;
@@ -259,7 +332,7 @@ function formatDateInput(date) {
  * Fetch promoter links from Promoters tab
  */
 async function fetchPromoterLinks() {
-    const promotersUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${PROMOTERS_GID}`;
+    const promotersUrl = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_SHEET_ID}/pub?output=csv&gid=${PROMOTERS_GID}`;
     
     try {
         const response = await fetch(promotersUrl, {
@@ -294,7 +367,7 @@ async function fetchPromoterLinks() {
  * Fetch venue links from Venues tab
  */
 async function fetchVenueLinks() {
-    const venuesUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${VENUES_GID}`;
+    const venuesUrl = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_SHEET_ID}/pub?output=csv&gid=${VENUES_GID}`;
     
     try {
         const response = await fetch(venuesUrl, {
@@ -346,29 +419,44 @@ function getVenueLink(venueName) {
  */
 function getEventPageUrl(concert) {
     // Create a unique ID from event data
-    const eventId = btoa(JSON.stringify({
+    // Use encodeURIComponent to handle special characters safely
+    try {
+        const eventData = JSON.stringify({
         date: concert.date,
         artist: concert.artist,
         venue: concert.venue
-    })).replace(/[+/=]/g, '').substring(0, 20);
+        });
+        // Use a safer encoding method that handles all characters
+        const eventId = encodeURIComponent(eventData)
+            .replace(/[!'()*]/g, '') // Remove problematic characters
+            .substring(0, 100); // Limit length
     
     return `event.html?id=${eventId}`;
+    } catch (err) {
+        // Fallback: use a simple hash
+        const simpleId = `${concert.date || ''}_${concert.artist || ''}_${concert.venue || ''}`
+            .replace(/[^a-zA-Z0-9_]/g, '_')
+            .substring(0, 50);
+        return `event.html?id=${encodeURIComponent(simpleId)}`;
+    }
 }
 
 /**
- * Fetch concerts from Google Sheets with fallback URLs
+ * Fetch concerts from the single sheet
  */
 async function fetchConcerts() {
         if (loading) loading.style.display = 'block';
         if (error) error.style.display = 'none';
 
-    let lastError = null;
+    console.log('Loading concerts from sheet...');
     
-    // Try each URL until one works
-    for (let i = 0; i < CSV_URLS.length; i++) {
+    const urls = getCSVUrls();
+    let allRawConcerts = [];
+    
+    for (let i = 0; i < urls.length; i++) {
         try {
-            const url = CSV_URLS[i];
-            console.log(`Trying URL ${i + 1}/${CSV_URLS.length}: ${url.substring(0, 80)}...`);
+            const url = urls[i];
+            console.log(`  Trying URL ${i + 1}/${urls.length}...`);
             
             const response = await fetch(url, {
                 method: 'GET',
@@ -382,6 +470,13 @@ async function fetchConcerts() {
 
             let csvText = await response.text();
             
+            // Check if Google Apps Script returned an error
+            if (csvText.trim().startsWith('Error:')) {
+                const errorMsg = csvText.trim();
+                console.error(`  Google Apps Script error: ${errorMsg}`);
+                throw new Error(errorMsg);
+            }
+            
             // Handle CORS proxy responses that might wrap the data
             if (csvText.includes('<!DOCTYPE') || csvText.includes('<html')) {
                 throw new Error('Received HTML instead of CSV (likely CORS issue)');
@@ -390,57 +485,166 @@ async function fetchConcerts() {
             // Clean up the CSV text (remove BOM if present)
             csvText = csvText.replace(/^\uFEFF/, '');
             
-            const rawConcerts = parseCSV(csvText);
-            
-            if (rawConcerts.length === 0) {
-                throw new Error('No concerts found in CSV data');
+            // Check if response is empty
+            if (!csvText.trim()) {
+                throw new Error('Received empty response from server');
             }
             
-            // Add parsed date objects for easier filtering and sorting
-            window.allConcerts = rawConcerts.map(concert => ({
-                ...concert,
-                parsedDate: parseDate(concert.date)
-            }));
-
-            console.log(`Successfully loaded ${window.allConcerts.length} concerts`);
-            
-            // Fetch promoter and venue links from separate tabs
-            await fetchPromoterLinks();
-            await fetchVenueLinks();
-            
-            if (loading) loading.style.display = 'none';
-            
-            // Set default view to grid if it's active
-            if (gridView && gridView.classList.contains('active')) {
-                if (typeof renderGridView === 'function') {
-                    renderGridView();
-                }
+            // Debug: log first few lines
+            if (i === 0) {
+                const firstLines = csvText.split('\n').slice(0, 5);
+                console.log(`  CSV preview (first 5 lines):`, firstLines);
+                console.log(`  CSV length: ${csvText.length} chars, ${csvText.split('\n').length} lines`);
             }
             
-            applyFilters();
-            return; // Success!
+            allRawConcerts = parseCSV(csvText);
+            
+            // Log if no concerts found
+            if (allRawConcerts.length === 0 && i === 0) {
+                console.warn(`  ⚠ No concerts parsed - check CSV structure`);
+            }
+            
+            if (allRawConcerts.length > 0) {
+                console.log(`  ✓ Loaded ${allRawConcerts.length} concerts`);
+                break; // Success! Stop trying other URLs
+            }
             
         } catch (err) {
-            console.warn(`URL ${i + 1} failed:`, err.message);
-            lastError = err;
-            // Continue to next URL
+            console.error(`  ✗ URL ${i + 1} failed:`, err.message);
+            console.error(`  Full error:`, err);
+            
+            if (i === urls.length - 1) {
+                // Last URL failed
+                console.error('  Could not load sheet data');
+                if (loading) loading.style.display = 'none';
+                if (error) {
+                    // Check if it's a Google Apps Script error
+                    const isScriptError = err.message && err.message.includes('Error:');
+                    const errorDetails = isScriptError 
+                        ? `<strong>Google Apps Script Error:</strong> ${err.message}<br><br>`
+                        : '';
+                    
+                    error.style.display = 'block';
+                    error.innerHTML = `
+                        <strong>Error loading data:</strong> Could not fetch concerts from sheet.<br><br>
+                        ${errorDetails}
+                        <strong>Debugging steps:</strong><br>
+                        1. Open browser console (F12) and check for detailed error messages<br>
+                        2. If using Google Apps Script:<br>
+                           &nbsp;&nbsp;- Make sure the Web App URL is correct<br>
+                           &nbsp;&nbsp;- Check that SPREADSHEET_ID in Google Apps Script matches your sheet<br>
+                           &nbsp;&nbsp;- Verify SHEET_NAME matches your sheet tab name exactly<br>
+                           &nbsp;&nbsp;- Test the URL directly: <a href="${urls[0]}" target="_blank">${urls[0]}</a><br>
+                        3. If using direct URLs: Make sure sheet is published (File → Share → Publish to web)<br>
+                        4. Check that sheet structure is: A=Date, B=Name, C=Style, D=Place, E=Type, F=Link<br>
+                    `;
+                }
+                return;
+            }
         }
     }
     
-    // All URLs failed
+    if (allRawConcerts.length === 0) {
     if (loading) loading.style.display = 'none';
     if (error) {
         error.style.display = 'block';
     error.innerHTML = `
-        <strong>Error loading data:</strong> ${lastError?.message || 'Unknown error'}<br><br>
-        <strong>Possible solutions:</strong><br>
-        1. Make sure your Google Sheet is published: <strong>File → Share → Publish to web → CSV</strong><br>
-        2. Check your internet connection<br>
-        3. The sheet might be private - make sure it's publicly accessible<br>
-        4. Try refreshing the page
-    `;
+                <strong>Error loading data:</strong> No concerts found in sheet.<br><br>
+                <strong>Debugging steps:</strong><br>
+                1. Check that your sheet has data<br>
+                2. Verify sheet structure: A=Date, B=Name, C=Style, D=Place, E=Type, F=Link<br>
+                3. Make sure dates are in format: "1. 11. 2025" or "1.11.2025"<br>
+            `;
+        }
+        console.error('No concerts loaded from sheet');
+        return;
     }
-    console.error('All fetch attempts failed. Last error:', lastError);
+    
+    // Add parsed date objects and month info for easier filtering
+    window.allConcerts = allRawConcerts.map(concert => {
+        const parsedDate = parseDate(concert.date);
+        let monthYear = null;
+        if (parsedDate) {
+            const year = parsedDate.getFullYear();
+            const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+            monthYear = `${year}-${month}`;
+        }
+        
+        return {
+            ...concert,
+            parsedDate: parsedDate,
+            monthYear: monthYear
+        };
+    });
+
+    console.log(`Successfully loaded ${window.allConcerts.length} total concerts`);
+    
+    // Populate month filter dropdown and set current month as default
+    populateMonthFilter();
+    
+    // Fetch promoter and venue links from separate tabs
+    await fetchPromoterLinks();
+    await fetchVenueLinks();
+    
+    if (loading) loading.style.display = 'none';
+    
+    // Always apply filters after loading (this will render the views)
+    // Filters will default to current month
+    applyFilters();
+    
+    // Set default view to table (table view is now default)
+    if (tableView && tableView.classList.contains('active')) {
+        if (typeof renderTableView === 'function') {
+            setTimeout(() => renderTableView(), 100);
+        }
+    }
+}
+
+/**
+ * Populate month filter dropdown with available months
+ * Sets current month as default
+ */
+function populateMonthFilter() {
+    if (!filterMonth) return;
+    
+    // Get unique months from concerts
+    const months = new Set();
+    window.allConcerts.forEach(concert => {
+        if (concert.monthYear) {
+            months.add(concert.monthYear);
+        }
+    });
+    
+    // Sort months (newest first)
+    const sortedMonths = Array.from(months).sort().reverse();
+    
+    // Get current month in YYYY-MM format
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    
+    // Clear existing options
+    filterMonth.innerHTML = '<option value="">All Months</option>';
+    
+    // Add month options
+    sortedMonths.forEach(month => {
+        const [year, monthNum] = month.split('-');
+        const monthName = new Date(year, parseInt(monthNum) - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        const option = document.createElement('option');
+        option.value = month;
+        option.textContent = monthName;
+        // Set current month as selected by default
+        if (month === currentMonth) {
+            option.selected = true;
+        }
+        filterMonth.appendChild(option);
+    });
+    
+    // If current month is not in the list, but we have concerts, select the newest month
+    if (!sortedMonths.includes(currentMonth) && sortedMonths.length > 0) {
+        filterMonth.value = sortedMonths[0]; // Select newest month
+    }
+    
+    console.log(`Populated month filter with ${sortedMonths.length} months (default: ${filterMonth.value || 'All Months'})`);
 }
 
 // ============================================
@@ -470,13 +674,21 @@ function applyFilters() {
     }
     
     // Get filter values safely
+    const monthValue = filterMonth ? filterMonth.value : '';
     const dateFromValue = filterDateFrom ? filterDateFrom.value : '';
     const dateToValue = filterDateTo ? filterDateTo.value : '';
     const genreValue = filterGenre ? filterGenre.value.trim() : '';
     const venueValue = filterVenue ? filterVenue.value.trim() : '';
     
     window.filteredConcerts = window.allConcerts.filter(concert => {
-        // Date range filter
+        // Month filter (takes priority over date range)
+        if (monthValue && concert.monthYear) {
+            if (concert.monthYear !== monthValue) {
+                return false;
+            }
+        }
+        
+        // Date range filter (works independently or with month filter)
         if (dateFromValue || dateToValue) {
             if (concert.parsedDate) {
                 const concertDate = new Date(concert.parsedDate);
@@ -498,7 +710,10 @@ function applyFilters() {
                     }
                 }
             } else {
+                // If date range is set but concert has no valid date, exclude it
+                if (dateFromValue || dateToValue) {
                 return false;
+                }
             }
         }
 
@@ -536,44 +751,13 @@ function applyFilters() {
     }
 }
 
-/**
- * Toggle filters visibility
- */
-function toggleFilters() {
-    console.log('toggleFilters called');
-    if (!filtersContainer) {
-        console.error('filtersContainer not found');
-        filtersContainer = document.getElementById('filtersContainer');
-        if (!filtersContainer) {
-            console.error('Still cannot find filtersContainer');
-            return;
-        }
-    }
-    
-    const filtersSection = filtersContainer.closest('.filters-section');
-    const hasShow = filtersContainer.classList.contains('show');
-    
-    console.log('Current state:', hasShow ? 'shown' : 'hidden');
-    
-    if (hasShow) {
-        filtersContainer.classList.remove('show');
-        if (filtersSection) {
-            filtersSection.classList.remove('filters-open');
-        }
-        console.log('Filters hidden');
-    } else {
-        filtersContainer.classList.add('show');
-        if (filtersSection) {
-            filtersSection.classList.add('filters-open');
-        }
-        console.log('Filters shown');
-    }
-}
+// Toggle filters function removed - filters are now always visible
 
 /**
  * Clear all filters
  */
 function clearFilters() {
+    if (filterMonth) filterMonth.value = '';
     if (filterDateFrom) filterDateFrom.value = '';
     if (filterDateTo) filterDateTo.value = '';
     if (filterGenre) filterGenre.value = '';
@@ -690,27 +874,18 @@ function showCalendarView() {
     if (tableViewBtn) tableViewBtn.classList.remove('active');
     if (calendarViewBtn) calendarViewBtn.classList.add('active');
     
-    // Force reflow and then render calendar
-    if (calendarView) {
-        calendarView.offsetHeight; // Force reflow
-    }
-    
-    // Small delay to ensure DOM is ready and visible, then render
+    // Initialize calendar if not already done
     setTimeout(() => {
-        if (typeof renderCalendarView === 'function') {
+        if (typeof initCalendar === 'function') {
+            console.log('Initializing calendar');
+            initCalendar();
+        } else if (typeof renderCalendarView === 'function') {
             console.log('Calling renderCalendarView');
             renderCalendarView();
         } else {
-            console.error('renderCalendarView function not found');
+            console.error('Calendar functions not found');
         }
     }, 100);
-    
-    // Also try rendering after a longer delay to ensure FullCalendar is ready
-    setTimeout(() => {
-        if (typeof renderCalendarView === 'function' && calendarView && calendarView.style.display !== 'none') {
-            renderCalendarView();
-        }
-    }, 500);
 }
 
 // ============================================

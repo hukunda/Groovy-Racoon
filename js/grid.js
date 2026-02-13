@@ -28,48 +28,191 @@ async function getArtistImage(artistName) {
 
 /**
  * Try multiple image sources to find band/artist images
+ * Uses Last.fm API first (most reliable), then Google Images
  */
 async function fetchImageFromMultipleSources(artistName) {
-    // Strategy 1: Try Last.fm API (free, no key needed for basic image fetching)
-    // Last.fm provides artist images via their API
+    // Strategy 1: Try Last.fm API first (most reliable and fast)
     try {
-        const lastFmUrl = `https://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=${encodeURIComponent(artistName)}&api_key=b25b959554ed76058ac220b7b2e0a026&format=json`;
+        // Clean artist name - remove extra characters like (FR), +, etc.
+        const cleanName = artistName
+            .split('(')[0]
+            .split('+')[0]
+            .split('/')[0]
+            .trim();
         
-        const response = await fetch(lastFmUrl);
+        const lastFmUrl = `https://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=${encodeURIComponent(cleanName)}&api_key=b25b959554ed76058ac220b7b2e0a026&format=json`;
+        
+        const response = await Promise.race([
+            fetch(lastFmUrl),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
+        ]);
+        
         if (response.ok) {
             const data = await response.json();
             if (data.artist && data.artist.image && data.artist.image.length > 0) {
-                // Get the largest image (usually the last one)
-                const images = data.artist.image.filter(img => img['#text']);
+                // Get the largest image (usually the last one, size "extralarge" or "large")
+                const images = data.artist.image.filter(img => img['#text'] && img['#text'].length > 0);
                 if (images.length > 0) {
-                    const imageUrl = images[images.length - 1]['#text'];
-                    if (imageUrl && !imageUrl.includes('noimage')) {
-                        // Verify image loads
-                        const verified = await verifyImage(imageUrl);
-                        if (verified) {
-                            return imageUrl;
+                    // Try to get extralarge first, then large, then medium
+                    let imageUrl = null;
+                    for (let i = images.length - 1; i >= 0; i--) {
+                        const url = images[i]['#text'];
+                        if (url && !url.includes('noimage') && !url.includes('2a96cbd8b46e442fc41c2b86b821562f')) {
+                            imageUrl = url;
+                            break;
                         }
+                    }
+                    
+                    if (imageUrl) {
+                        // Quick verification (skip verification for speed - Last.fm URLs are usually reliable)
+                        console.log(`✓ Found Last.fm image for ${artistName}`);
+                        return imageUrl;
                     }
                 }
             }
         }
     } catch (error) {
-        console.log(`Last.fm API failed for ${artistName}, trying alternatives...`);
+        console.log(`Last.fm failed for ${artistName}, trying Google Images...`);
     }
 
-    // Strategy 2: Try Unsplash with music keywords
+    // Strategy 2: Try Google Images (slower, less reliable)
     try {
-        const unsplashUrl = `https://source.unsplash.com/400x300/?music,concert,band,${encodeURIComponent(artistName)}`;
-        const verified = await verifyImage(unsplashUrl, 1500);
-        if (verified) {
-            return unsplashUrl;
+        const googleImageUrl = await Promise.race([
+            fetchGoogleImage(artistName),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+        ]);
+        
+        if (googleImageUrl) {
+            // Quick verification
+            const verified = await verifyImage(googleImageUrl, 2000);
+            if (verified) {
+                console.log(`✓ Found Google Image for ${artistName}`);
+                return googleImageUrl;
+            }
         }
     } catch (error) {
-        console.log(`Unsplash failed for ${artistName}`);
+        console.log(`Google Images failed for ${artistName}`);
     }
-
-    // Strategy 3: Use a smart placeholder with artist initials
+    
+    // Strategy 3: Use a smart placeholder with artist initials (instant fallback)
     return getPlaceholderImage(artistName);
+}
+
+/**
+ * Fetch first image from Google Images for artist/band
+ * Uses a CORS proxy to fetch Google Images search results
+ * Extracts the first image URL from the search results
+ */
+async function fetchGoogleImage(artistName) {
+    try {
+        // Clean artist name - remove extra characters like (FR), +, etc.
+        const cleanName = artistName
+            .split('(')[0]
+            .split('+')[0]
+            .split('/')[0]
+            .trim();
+        
+        const searchQuery = encodeURIComponent(`${cleanName} band music concert`);
+        
+        // Use a CORS proxy to fetch Google Images search
+        // Try multiple proxy services for reliability
+        const proxies = [
+            `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.google.com/search?q=${searchQuery}&tbm=isch&safe=active&tbs=isz:m`)}`,
+            `https://corsproxy.io/?${encodeURIComponent(`https://www.google.com/search?q=${searchQuery}&tbm=isch&safe=active&tbs=isz:m`)}`
+        ];
+        
+        for (const proxyUrl of proxies) {
+            try {
+                const response = await fetch(proxyUrl, {
+                    method: 'GET',
+                    mode: 'cors',
+                    cache: 'no-cache'
+                });
+                
+                if (response.ok) {
+                    let html = '';
+                    
+                    // Handle different proxy response formats
+                    if (proxyUrl.includes('allorigins.win')) {
+                        const data = await response.json();
+                        html = data.contents || '';
+                    } else {
+                        html = await response.text();
+                    }
+                    
+                    if (!html) continue;
+                    
+                    // Google Images stores image data in JSON format within the page
+                    // Pattern 1: Look for "ou" field in JSON data (original image URL) - most reliable
+                    const ouPattern = /"ou":"([^"]+)"/g;
+                    const ouMatches = [...html.matchAll(ouPattern)];
+                    
+                    for (const match of ouMatches) {
+                        if (match[1]) {
+                            let imageUrl = match[1]
+                                .replace(/\\u003d/g, '=')
+                                .replace(/\\u0026/g, '&')
+                                .replace(/\\\//g, '/')
+                                .replace(/\\"/g, '"');
+                            
+                            // Decode URL encoding
+                            try {
+                                imageUrl = decodeURIComponent(imageUrl);
+                            } catch (e) {
+                                // If decode fails, use as-is
+                            }
+                            
+                            // Verify it's a valid image URL
+                            if (imageUrl.startsWith('http') && 
+                                (imageUrl.match(/\.(jpg|jpeg|png|webp|gif)(\?|$|#)/i) || 
+                                 imageUrl.includes('googleusercontent.com') ||
+                                 imageUrl.includes('imgur.com') ||
+                                 imageUrl.includes('bandcamp.com'))) {
+                                return imageUrl;
+                            }
+                        }
+                    }
+                    
+                    // Pattern 2: Look for "ow" field (original width) which often comes with "ou"
+                    const owPattern = /"ow":\d+,"ou":"([^"]+)"/g;
+                    const owMatches = [...html.matchAll(owPattern)];
+                    for (const match of owMatches) {
+                        if (match[1]) {
+                            let imageUrl = match[1]
+                                .replace(/\\u003d/g, '=')
+                                .replace(/\\u0026/g, '&')
+                                .replace(/\\\//g, '/');
+                            
+                            if (imageUrl.startsWith('http')) {
+                                return imageUrl;
+                            }
+                        }
+                    }
+                    
+                    // Pattern 3: Look for direct image URLs in img tags
+                    const imgTagPattern = /<img[^>]+src=["'](https:\/\/[^"']+\.(jpg|jpeg|png|webp|gif)[^"']*)["']/i;
+                    const imgMatch = html.match(imgTagPattern);
+                    if (imgMatch && imgMatch[1]) {
+                        return imgMatch[1];
+                    }
+                    
+                    // Pattern 4: Look for data-src attributes (lazy loading)
+                    const dataSrcPattern = /data-src=["'](https:\/\/[^"']+\.(jpg|jpeg|png|webp|gif)[^"']*)["']/i;
+                    const dataSrcMatch = html.match(dataSrcPattern);
+                    if (dataSrcMatch && dataSrcMatch[1]) {
+                        return dataSrcMatch[1];
+                    }
+                }
+            } catch (proxyError) {
+                // Try next proxy
+                continue;
+            }
+        }
+    } catch (error) {
+        console.log(`Error fetching Google Image for ${artistName}:`, error.message);
+    }
+    
+    return null;
 }
 
 /**
@@ -103,21 +246,33 @@ function verifyImage(url, timeout = 2000) {
  * Creates a nice gradient placeholder with artist initials
  */
 function getPlaceholderImage(artistName) {
+    if (!artistName) return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMkQyRDJEIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0IyMjIyMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk1VU0lDPC90ZXh0Pjwvc3ZnPg==';
+    
     const initials = artistName
-        .split(' ')
+        .split(/[\s+&,]/)
+        .map(word => word.trim())
+        .filter(word => word.length > 0)
         .map(word => word[0])
-        .filter(char => char && /[A-Za-z]/.test(char))
+        .filter(char => char && /[A-Za-z0-9]/.test(char))
         .join('')
         .substring(0, 2)
         .toUpperCase() || artistName.substring(0, 2).toUpperCase();
     
-    // Use a service that creates nice gradient placeholders
-    // Using placeholder.com with a music-themed color scheme
-    const colors = ['1a1a1a', '2d2d2d', '3a3a3a'];
-    const textColor = 'B22222';
-    const bgColor = colors[Math.floor(Math.random() * colors.length)];
+    // Create SVG placeholder with initials (no CORS issues)
+    const colors = ['#1a1a1a', '#2d2d2d', '#3a3a3a', '#4a4a4a'];
+    const textColor = '#B22222';
+    const bgColor = colors[initials.charCodeAt(0) % colors.length];
     
-    return `https://via.placeholder.com/400x300/${bgColor}/${textColor}?text=${encodeURIComponent(initials || artistName.substring(0, 15))}`;
+    // Create SVG data URL
+    const svg = `
+        <svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100%" height="100%" fill="${bgColor}"/>
+            <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="48" font-weight="bold" 
+                  fill="${textColor}" text-anchor="middle" dominant-baseline="central">${initials}</text>
+        </svg>
+    `.trim();
+    
+    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
 }
 
 /**
@@ -143,47 +298,36 @@ async function renderGridView() {
         return a.parsedDate - b.parsedDate;
     });
 
-    // Group concerts by date (Today, Tomorrow, Upcoming)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const todayEvents = [];
-    const tomorrowEvents = [];
-    const upcomingEvents = [];
-
-    sortedConcerts.forEach(concert => {
-        if (!concert.parsedDate) {
-            upcomingEvents.push(concert);
-            return;
+    // Render all concerts at once (no grouping)
+    if (sortedConcerts.length > 0) {
+        console.log(`Rendering ${sortedConcerts.length} concerts in grid view`);
+        
+        // Render all events without section header
+        const cardsContainer = document.createElement('div');
+        cardsContainer.className = 'events-cards-container';
+        
+        // Render cards with placeholder images first, then load real images in background
+        for (let i = 0; i < sortedConcerts.length; i++) {
+            const concert = sortedConcerts[i];
+            try {
+                // Create card with placeholder first (instant)
+                const card = await createEventCardFast(concert);
+                if (card) {
+                    cardsContainer.appendChild(card);
+                    
+                    // Load real image in background (non-blocking) - don't await
+                    loadImageInBackground(card, concert.artist).catch(err => {
+                        console.log(`Background image load for ${concert.artist} failed:`, err.message);
+                    });
+                }
+            } catch (error) {
+                console.error(`Error creating card for ${concert.artist}:`, error);
+            }
         }
-
-        const eventDate = new Date(concert.parsedDate);
-        eventDate.setHours(0, 0, 0, 0);
-
-        if (eventDate.getTime() === today.getTime()) {
-            todayEvents.push(concert);
-        } else if (eventDate.getTime() === tomorrow.getTime()) {
-            tomorrowEvents.push(concert);
-        } else {
-            upcomingEvents.push(concert);
-        }
-    });
-
-    // Render sections
-    if (todayEvents.length > 0) {
-        renderEventSection(gridContainer, 'Today', todayEvents);
-    }
-    if (tomorrowEvents.length > 0) {
-        renderEventSection(gridContainer, 'Tomorrow', tomorrowEvents);
-    }
-    if (upcomingEvents.length > 0) {
-        renderEventSection(gridContainer, 'Upcoming', upcomingEvents);
-    }
-
-    // If no events in any category, show message
-    if (todayEvents.length === 0 && tomorrowEvents.length === 0 && upcomingEvents.length === 0) {
+        
+        gridContainer.appendChild(cardsContainer);
+        console.log(`Grid view rendered with ${cardsContainer.children.length} cards`);
+    } else {
         gridContainer.innerHTML = '<div class="no-events-message"><p>No concerts found. Try adjusting your filters.</p></div>';
     }
 }
@@ -219,9 +363,10 @@ async function renderEventSection(container, sectionTitle, events) {
 }
 
 /**
- * Create an event card element
+ * Create an event card element quickly with placeholder
+ * Real images load in background
  */
-async function createEventCard(concert) {
+async function createEventCardFast(concert) {
     const card = document.createElement('div');
     card.className = 'event-card';
     
@@ -231,29 +376,37 @@ async function createEventCard(concert) {
         card.classList.add('in-my-list');
     }
 
-    // Get image
-    const imageUrl = await getArtistImage(concert.artist);
+    // Use placeholder immediately (no waiting)
+    const imageUrl = getPlaceholderImage(concert.artist);
     
-    // Format date
-    const dateStr = concert.date || 'TBA';
+    // Format date properly
+    let dateStr = 'TBA';
+    if (concert.parsedDate) {
+        const date = new Date(concert.parsedDate);
+        if (!isNaN(date.getTime())) {
+            dateStr = formatCardDate(date);
+        }
+    } else if (concert.date) {
+        dateStr = concert.date;
+    }
+    
     const genreColor = typeof getGenreColor === 'function' ? getGenreColor(concert.genre) : '#B22222';
     
-    // Create card HTML
+    // Create card HTML (no clickable links)
     card.innerHTML = `
         <div class="event-card-image-container">
-            <img src="${imageUrl}" alt="${escapeHtml(concert.artist)}" class="event-card-image" loading="lazy">
-            <div class="event-card-checkbox">
+            <img src="${imageUrl}" alt="${escapeHtml(concert.artist)}" class="event-card-image" loading="lazy" data-artist="${escapeHtml(concert.artist)}">
+            <div class="event-card-checkbox" title="${isInList ? 'Remove from My List' : 'Add to My List'}">
                 <input type="checkbox" class="event-checkbox" ${isInList ? 'checked' : ''} 
                        data-artist="${escapeHtml(concert.artist)}" 
-                       data-date="${escapeHtml(concert.date)}">
+                       data-date="${escapeHtml(concert.date)}"
+                       title="${isInList ? 'Remove from My List' : 'Add to My List'}">
             </div>
             ${concert.genre ? `<div class="event-card-genre" style="background-color: ${genreColor};">${escapeHtml(concert.genre)}</div>` : ''}
         </div>
         <div class="event-card-content">
             <h3 class="event-card-title">
-                <a href="${typeof getEventPageUrl === 'function' ? getEventPageUrl(concert) : '#'}" class="event-card-link">
-                    ${escapeHtml(concert.artist)}
-                </a>
+                ${escapeHtml(concert.artist)}
             </h3>
             <div class="event-card-details">
                 <div class="event-card-detail-item">
@@ -286,9 +439,13 @@ async function createEventCard(concert) {
         </div>
     `;
 
-    // Add checkbox event listener
+    // Add checkbox event listener - prevent link click when clicking checkbox
     const checkbox = card.querySelector('.event-checkbox');
     if (checkbox) {
+        checkbox.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        
         checkbox.addEventListener('change', function() {
             if (this.checked) {
                 if (typeof addToMyList === 'function') {
@@ -299,16 +456,80 @@ async function createEventCard(concert) {
                     removeFromMyList(concert);
                 }
             }
-            // Update card appearance
+            // Update card appearance and tooltip
             if (this.checked) {
                 card.classList.add('in-my-list');
+                this.title = 'Remove from My List';
+                if (checkboxContainer) checkboxContainer.title = 'Remove from My List';
             } else {
                 card.classList.remove('in-my-list');
+                this.title = 'Add to My List';
+                if (checkboxContainer) checkboxContainer.title = 'Add to My List';
             }
+        });
+    }
+    
+    // Prevent link click when clicking on checkbox container
+    const checkboxContainer = card.querySelector('.event-card-checkbox');
+    if (checkboxContainer) {
+        checkboxContainer.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            if (checkbox) checkbox.click();
         });
     }
 
     return card;
+}
+
+/**
+ * Load real image in background and update card when ready
+ * This allows cards to render instantly while images load asynchronously
+ */
+async function loadImageInBackground(card, artistName) {
+    try {
+        const img = card.querySelector('.event-card-image');
+        if (!img) return;
+        
+        // Get real image (with timeout)
+        const realImageUrl = await Promise.race([
+            getArtistImage(artistName),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+        ]);
+        
+        // Only update if we got a different (non-placeholder) image
+        if (realImageUrl && !realImageUrl.startsWith('data:image/svg')) {
+            // Directly update the image - browser will handle loading
+            img.src = realImageUrl;
+            img.onerror = () => {
+                // If real image fails, keep placeholder
+                img.src = getPlaceholderImage(artistName);
+            };
+        } else {
+            // If we got a placeholder, make sure it's set
+            img.src = getPlaceholderImage(artistName);
+        }
+    } catch (error) {
+        // Silently fail - placeholder is already showing
+        console.log(`Background image load failed for ${artistName}:`, error.message);
+    }
+}
+
+/**
+ * Escape HTML to prevent XSS
+ */
+/**
+ * Format date for card display (readable format)
+ */
+function formatCardDate(date) {
+    if (!date || isNaN(date.getTime())) return 'TBA';
+    
+    const day = date.getDate();
+    const month = date.toLocaleDateString('en-US', { month: 'short' });
+    const year = date.getFullYear();
+    const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
+    
+    return `${day} ${month} ${year}, ${dayOfWeek}`;
 }
 
 /**

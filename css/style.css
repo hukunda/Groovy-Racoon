@@ -9,44 +9,72 @@
 }
 
 /* ============================================
+   Groovy Racoon - 2026 Modern Design System
+   ============================================ */
+
+/* ============================================
    CSS Variables - Light Theme (Default)
    ============================================ */
 
 :root {
-    --bg-primary: #F5F5F5;
+    --bg-primary: #FAFAFA;
     --bg-secondary: #FFFFFF;
-    --text-primary: #222222;
-    --text-secondary: #666666;
-    --primary: #B22222;
-    --secondary: #A9A9A9;
-    --accent: #B22222;
-    --border: #CCCCCC;
-    --shadow: rgba(0, 0, 0, 0.15);
+    --bg-tertiary: #F5F5F7;
+    --text-primary: #1D1D1F;
+    --text-secondary: #6E6E73;
+    --text-tertiary: #86868B;
+    --primary: #007AFF;
+    --primary-hover: #0051D5;
+    --primary-light: #E3F2FD;
+    --secondary: #5856D6;
+    --accent: #FF3B30;
+    --success: #34C759;
+    --border: #D2D2D7;
+    --border-light: #E5E5EA;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
     
-    /* Genre Colors */
-    --genre-punk: #6B8E23;
-    --genre-metal: #8B0000;
-    --genre-jazz: #B8860B;
-    --genre-noise: #708090;
-    --genre-postpunk: #4B0082;
-    --genre-indie: #4682B4;
-    --genre-electronic: #008B8B;
+    /* Genre Colors - Modern Palette */
+    --genre-punk: #FF6B6B;
+    --genre-metal: #4A4A4A;
+    --genre-jazz: #FFB347;
+    --genre-noise: #9B59B6;
+    --genre-postpunk: #5D4E75;
+    --genre-indie: #3498DB;
+    --genre-electronic: #1ABC9C;
+    --genre-rock: #E74C3C;
+    --genre-ambient: #95A5A6;
 }
 
 /* ============================================
-   CSS Variables - Dark Theme
+   CSS Variables - Dark Theme (2026 Style)
    ============================================ */
 
 [data-theme="dark"] {
-    --bg-primary: #0D0D0D;
-    --bg-secondary: #1A1A1A;
-    --text-primary: #EAEAEA;
-    --text-secondary: #A9A9A9;
-    --primary: #B22222;
-    --secondary: #A9A9A9;
-    --accent: #B22222;
-    --border: #333333;
-    --shadow: rgba(0, 0, 0, 0.8);
+    --bg-primary: #000000;
+    --bg-secondary: #1C1C1E;
+    --bg-tertiary: #2C2C2E;
+    --text-primary: #FFFFFF;
+    --text-secondary: #AEAEB2;
+    --text-tertiary: #8E8E93;
+    --primary: #0A84FF;
+    --primary-hover: #409CFF;
+    --primary-light: #1A1A1E;
+    --secondary: #5E5CE6;
+    --accent: #FF453A;
+    --success: #30D158;
+    --border: #38383A;
+    --border-light: #2C2C2E;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
 }
 
 /* ============================================
@@ -64,16 +92,18 @@ html {
 }
 
 body {
-    font-family: 'Stack Sans Notch', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
     background: var(--bg-primary);
     color: var(--text-primary);
     min-height: 100vh;
     line-height: 1.6;
-    transition: background-color 0.5s ease, color 0.5s ease;
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Grunge texture overlay */
+/* Modern subtle background pattern */
 body::before {
     content: '';
     position: fixed;
@@ -81,28 +111,27 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: 
-        radial-gradient(circle at 20% 50%, rgba(0, 0, 0, 0.02) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.02) 0%, transparent 50%);
-    background-size: 200% 200%;
-    animation: textureMove 30s ease infinite;
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(0, 122, 255, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(88, 86, 214, 0.03) 0%, transparent 50%);
+    background-size: 100% 100%;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.4;
+    opacity: 1;
 }
 
 [data-theme="dark"] body::before {
-    background-image: 
-        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.015) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.015) 0%, transparent 50%);
-    opacity: 0.3;
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(10, 132, 255, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(94, 92, 230, 0.05) 0%, transparent 50%);
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Freckle Face', cursive;
-    font-weight: 400;
+    font-family: 'Signika', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 700;
     line-height: 1.2;
-    letter-spacing: 0.5px;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
 }
 
 /* ============================================
@@ -110,18 +139,21 @@ h1, h2, h3, h4, h5, h6 {
    ============================================ */
 
 .navbar {
-    background: linear-gradient(135deg, var(--primary) 0%, #8B1A1A 100%);
-    box-shadow: 0 4px 20px var(--shadow);
-    padding: 20px 0;
+    background: var(--bg-secondary);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    box-shadow: var(--shadow-sm);
+    padding: 16px 0;
     position: sticky;
     top: 0;
     z-index: 1000;
-    transition: all 0.5s ease;
-    border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-bottom: 1px solid var(--border-light);
 }
 
 [data-theme="dark"] .navbar {
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    background: rgba(28, 28, 30, 0.8);
+    border-bottom: 1px solid var(--border);
 }
 
 .nav-container {
@@ -141,45 +173,95 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     align-items: center;
     gap: 15px;
+    position: relative;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.logo-section:hover {
+    opacity: 0.8;
+}
+
+.logo-wrapper {
+    position: relative;
+    display: inline-block;
 }
 
 .logo {
     width: 70px;
     height: 70px;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-tertiary);
     padding: 5px;
-    transition: transform 0.3s ease;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
     object-fit: contain;
     display: block;
+    position: relative;
+    z-index: 2;
 }
 
 .logo:hover {
-    transform: rotate(5deg) scale(1.05);
+    transform: rotate(10deg) scale(1.1);
+}
+
+.racoon-decoration {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 50%;
+    opacity: 0.8;
+    animation: pulse 2s ease-in-out infinite;
+    z-index: 1;
+}
+
+.racoon-decoration::before {
+    content: '🎵';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
 }
 
 .logo-text {
-    color: var(--bg-secondary);
+    color: var(--text-primary);
 }
 
 .logo-title {
-    font-family: 'Freckle Face', cursive;
-    font-size: 2.2em;
-    font-weight: 400;
+    font-family: 'Signika', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
     margin: 0;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-    letter-spacing: 1px;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
 }
 
 .tagline {
-    font-size: 0.85em;
-    opacity: 0.95;
+    font-size: 0.875rem;
+    opacity: 0.8;
     font-weight: 500;
     margin: 0;
-    font-family: 'Stack Sans Notch', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    text-transform: none;
+    letter-spacing: -0.01em;
+    color: var(--text-secondary);
 }
 
 .nav-controls {
@@ -195,91 +277,61 @@ h1, h2, h3, h4, h5, h6 {
 
 .view-btn {
     padding: 12px 24px;
-    border: 2px solid var(--bg-secondary);
-    background: rgba(255, 255, 255, 0.15);
-    color: var(--bg-secondary);
-    border-radius: 4px;
+    border: none;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-radius: var(--radius-md);
     cursor: pointer;
-    font-size: 16px;
-    font-weight: 700;
-    font-family: 'Stack Sans Notch', sans-serif;
-    transition: all 0.3s ease;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     gap: 8px;
     position: relative;
     overflow: hidden;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.view-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.1);
-    transition: left 0.3s ease;
-}
-
-.view-btn:hover::before {
-    left: 100%;
+    text-transform: none;
+    letter-spacing: normal;
+    line-height: 1.2;
 }
 
 .view-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    background: rgba(0, 0, 0, 0.3);
-    animation: glitch 0.3s infinite;
+    background: var(--border-light);
+    color: var(--text-primary);
+    transform: translateY(-1px);
 }
 
 .view-btn.active {
-    background: var(--bg-secondary);
-    color: var(--primary);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    background: var(--primary);
+    color: #FFFFFF;
+    box-shadow: var(--shadow-sm);
+}
+
+.view-btn.active:hover {
+    background: var(--primary-hover);
 }
 
 .theme-toggle {
-    width: 50px;
-    height: 50px;
-    border: 2px solid var(--bg-secondary);
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    transition: all 0.3s ease;
+    font-size: 20px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
-    color: var(--bg-secondary);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.theme-toggle::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.1);
-    transition: left 0.3s ease;
-}
-
-.theme-toggle:hover::before {
-    left: 100%;
+    color: var(--text-primary);
 }
 
 .theme-toggle:hover {
-    transform: rotate(180deg) scale(1.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    background: rgba(0, 0, 0, 0.3);
-    animation: glitch 0.3s infinite;
+    background: var(--border-light);
+    transform: scale(1.05);
 }
 
 /* ============================================
@@ -289,7 +341,7 @@ h1, h2, h3, h4, h5, h6 {
 .main-content {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 40px 30px;
+    padding: 32px 24px;
     min-height: calc(100vh - 200px);
     position: relative;
     z-index: 1;
@@ -301,117 +353,103 @@ h1, h2, h3, h4, h5, h6 {
 
 .filters-section {
     background: var(--bg-secondary);
-    border-radius: 12px;
-    padding: 0;
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
     margin-bottom: 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid var(--border);
-    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    overflow: hidden;
-}
-
-.filters-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid var(--border);
 }
 
 .toggle-filters-btn, .clear-filters-btn {
-    padding: 10px 20px;
+    padding: 12px 24px;
     background: var(--primary);
-    color: var(--bg-secondary);
+    color: #FFFFFF;
     border: none;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     font-weight: 600;
-    font-family: 'Stack Sans Notch', sans-serif;
-    transition: all 0.3s ease;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    text-transform: none;
+    letter-spacing: normal;
+    line-height: 1.2;
 }
 
 .toggle-filters-btn:hover, .clear-filters-btn:hover {
-    background: #8B1A1A;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(178, 34, 34, 0.3);
-    animation: glitch 0.3s infinite;
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
 .clear-filters-btn {
     background: transparent;
     color: var(--primary);
-    border: 2px solid var(--primary);
+    border: 1px solid var(--border);
+    padding: 12px 24px;
+    height: auto;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.2;
 }
 
 .clear-filters-btn:hover {
-    background: var(--primary);
-    color: var(--bg-secondary);
+    background: var(--primary-light);
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
 .filters-container {
-    display: none;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    padding: 20px;
-    align-items: end;
-}
-
-.filters-container.show {
-    display: grid;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
 }
 
 #filterToggleIcon {
-    transition: transform 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-block;
     transform: rotate(0deg);
+    margin-left: 8px;
 }
 
 .filters-section.filters-open #filterToggleIcon {
     transform: rotate(180deg);
 }
 
-.filters-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--primary), transparent);
-    opacity: 0.5;
-}
-
-.filters-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    align-items: end;
-    align-content: end;
-}
-
 .filter-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+    flex: 1;
+    min-width: 140px;
+}
+
+.filter-group-reset {
+    flex: 0 0 auto;
+    min-width: auto;
 }
 
 .filter-group label {
     font-weight: 600;
     color: var(--text-primary);
-    font-size: 14px;
-    font-family: 'Stack Sans Notch', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 0.8125rem;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    text-transform: none;
+    letter-spacing: -0.01em;
     display: flex;
     align-items: center;
     gap: 6px;
+    margin-bottom: 2px;
 }
 
 .filter-group label i {
@@ -419,23 +457,45 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .filter-input {
-    padding: 12px;
-    border: 2px solid var(--border);
-    border-radius: 4px;
-    font-size: 14px;
-    font-family: 'Stack Sans Notch', sans-serif;
-    background: var(--bg-primary);
+    padding: 10px 14px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-secondary);
     color: var(--text-primary);
-    transition: all 0.3s ease;
-    height: 48px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 40px;
     box-sizing: border-box;
+    cursor: pointer;
+    width: 100%;
 }
 
 .filter-input:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(178, 34, 34, 0.1);
-    transform: translateY(-2px);
+    box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+}
+
+.filter-input[type="date"],
+.filter-input select {
+    cursor: pointer;
+}
+
+.filter-input select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 40px;
+}
+
+[data-theme="dark"] .filter-input:focus {
+    box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.2);
+}
+
+[data-theme="dark"] .filter-input select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23AAA' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
 }
 
 .clear-btn {
@@ -446,7 +506,7 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 4px;
     cursor: pointer;
     font-weight: 600;
-    font-family: 'Stack Sans Notch', sans-serif;
+    font-family: 'Signika', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     transition: all 0.3s ease;
     white-space: nowrap;
     text-transform: uppercase;
@@ -465,7 +525,7 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 4px;
     cursor: pointer;
     font-weight: 600;
-    font-family: 'Stack Sans Notch', sans-serif;
+    font-family: 'Signika', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
@@ -513,49 +573,52 @@ h1, h2, h3, h4, h5, h6 {
 
 .tabs {
     display: flex;
-    gap: 10px;
-    border-bottom: 2px solid var(--border);
+    gap: 0;
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 32px;
 }
 
 .tab-btn {
-    padding: 12px 24px;
+    padding: 12px 20px;
     background: transparent;
     color: var(--text-secondary);
     border: none;
-    border-bottom: 3px solid transparent;
+    border-bottom: 2px solid transparent;
     cursor: pointer;
     font-weight: 600;
-    font-family: 'Stack Sans Notch', sans-serif;
-    transition: all 0.3s ease;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 0.9375rem;
+    text-transform: none;
+    letter-spacing: -0.01em;
     position: relative;
     margin-bottom: -2px;
 }
 
 .tab-btn:hover {
-    color: var(--primary);
-    background: rgba(178, 34, 34, 0.05);
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
 }
 
 .tab-btn.active {
     color: var(--primary);
     border-bottom-color: var(--primary);
-    background: rgba(178, 34, 34, 0.05);
+    background: transparent;
 }
 
 .list-count {
     background: var(--primary);
-    color: var(--bg-secondary);
+    color: #FFFFFF;
     border-radius: 12px;
     padding: 2px 8px;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 700;
-    margin-left: 4px;
+    margin-left: 6px;
+    min-width: 20px;
+    text-align: center;
 }
 
 /* My List Sidepane */
@@ -579,8 +642,9 @@ h1, h2, h3, h4, h5, h6 {
 
 .my-list-header h3 {
     color: var(--primary);
-    font-family: 'Freckle Face', cursive;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
     font-size: 1.5em;
+    font-weight: 700;
     margin: 0;
     display: flex;
     align-items: center;
@@ -595,21 +659,20 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 4px;
     cursor: pointer;
     font-weight: 600;
-    font-family: 'Stack Sans Notch', sans-serif;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 .export-my-list-btn:hover {
     background: #8B1A1A;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(178, 34, 34, 0.3);
-    animation: glitch 0.3s infinite;
 }
 
 .my-list-content {
@@ -648,12 +711,15 @@ h1, h2, h3, h4, h5, h6 {
     margin: 0 0 5px 0;
     color: var(--text-primary);
     font-size: 1.1em;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 600;
 }
 
 .my-list-item-info p {
     margin: 0;
     color: var(--text-secondary);
     font-size: 0.9em;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
 }
 
 .my-list-item-actions {
@@ -676,7 +742,6 @@ h1, h2, h3, h4, h5, h6 {
 .remove-from-list-btn:hover {
     background: var(--primary);
     color: var(--bg-secondary);
-    animation: glitch 0.3s infinite;
 }
 
 .clear-btn::before {
@@ -720,7 +785,7 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 50%;
     width: 50px;
     height: 50px;
-    animation: spin 1s linear infinite, glitch 0.3s infinite;
+    animation: spin 1s linear infinite;
     margin: 0 auto 20px;
     position: relative;
     filter: drop-shadow(0 0 8px rgba(178, 34, 34, 0.5));
@@ -739,7 +804,7 @@ h1, h2, h3, h4, h5, h6 {
     border: 2px solid transparent;
     border-top-color: var(--primary);
     border-radius: 50%;
-    animation: spin 0.8s linear infinite reverse, glitch 0.4s infinite;
+    animation: spin 0.8s linear infinite reverse;
     opacity: 0.6;
 }
 
@@ -796,12 +861,12 @@ h1, h2, h3, h4, h5, h6 {
 
 .view-section {
     display: none !important;
-    background: var(--bg-secondary);
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid var(--border);
-    transition: all 0.3s ease;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
 }
 
@@ -848,6 +913,16 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-primary);
     border-collapse: separate;
     border-spacing: 0;
+    margin: 0;
+}
+
+#tableView {
+    padding: 0 !important;
+}
+
+#tableView .dataTables_wrapper {
+    padding: 16px !important;
+    margin: 0 !important;
 }
 
 #concertsTable thead {
@@ -861,13 +936,18 @@ h1, h2, h3, h4, h5, h6 {
     text-transform: uppercase;
     font-size: 13px;
     letter-spacing: 0.5px;
-    font-family: 'Stack Sans Notch', sans-serif;
+    font-family: 'Signika', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     text-align: left;
 }
 
 #concertsTable thead th:first-child {
     text-align: center;
     width: 50px;
+}
+
+#concertsTable thead th:nth-child(3) {
+    width: 25%;
+    min-width: 200px;
 }
 
 #concertsTable tbody td {
@@ -879,6 +959,45 @@ h1, h2, h3, h4, h5, h6 {
 
 #concertsTable tbody td:first-child {
     text-align: center;
+}
+
+/* Date formatting in table */
+.table-date {
+    display: inline-block;
+    line-height: 1.4;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.table-date .date-day {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: inline-block;
+}
+
+.table-date .date-month {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 4px;
+}
+
+.table-date .date-year {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+}
+
+.table-date .date-weekday {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-top: 2px;
 }
 
 #concertsTable tbody tr {
@@ -906,7 +1025,7 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 4px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    font-family: 'Stack Sans Notch', sans-serif;
+    font-family: 'Signika', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     white-space: nowrap;
 }
 
@@ -1015,12 +1134,18 @@ h1, h2, h3, h4, h5, h6 {
 
 #concertsTable a.glitch-link:hover {
     color: var(--primary);
-    animation: glitch 0.3s infinite;
 }
 
 /* DataTables Custom Styling */
 .dataTables_wrapper {
     color: var(--text-primary);
+    padding: 16px !important;
+    margin: 0 !important;
+}
+
+.dataTables_wrapper .dataTables_filter {
+    padding: 12px 16px !important;
+    margin: 0 !important;
 }
 
 .dataTables_wrapper .dataTables_filter input {
@@ -1032,12 +1157,40 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-primary);
 }
 
+.dataTables_wrapper .dataTables_length {
+    padding: 12px 16px !important;
+    margin: 0 !important;
+}
+
+.dataTables_wrapper .dataTables_length label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 !important;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
 .dataTables_wrapper .dataTables_length select {
     border: 2px solid var(--border);
     border-radius: 4px;
-    padding: 8px 12px;
+    padding: 6px 10px;
     background: var(--bg-primary);
     color: var(--text-primary);
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    margin: 0 4px;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+    padding: 12px 16px !important;
+    margin: 0 !important;
+}
+
+.dataTables_wrapper .dataTables_info {
+    padding: 12px 16px !important;
+    margin: 0 !important;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button {
@@ -1067,6 +1220,8 @@ h1, h2, h3, h4, h5, h6 {
 #calendar {
     max-width: 100%;
     position: relative;
+    padding: 16px !important;
+    margin: 0;
 }
 
 #calendar::before {
@@ -1099,16 +1254,18 @@ h1, h2, h3, h4, h5, h6 {
 
 /* FullCalendar Custom Styling */
 .fc {
-    font-family: 'Stack Sans Notch', sans-serif;
+    font-family: 'Signika', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     color: var(--text-primary);
 }
 
 .fc-header-toolbar {
     margin-bottom: 20px;
+    padding: 0 !important;
+    gap: 8px !important;
 }
 
 .fc-toolbar-title {
-    font-family: 'Freckle Face', cursive;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
     font-size: 2em;
     font-weight: 700;
     color: var(--text-primary);
@@ -1117,21 +1274,26 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .fc-button {
-    background: var(--primary) !important;
-    border: none !important;
-    border-radius: 4px !important;
+    background: transparent !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md) !important;
     padding: 8px 16px !important;
     font-weight: 600 !important;
-    font-family: 'Stack Sans Notch', sans-serif !important;
-    transition: all 0.3s ease !important;
-    color: var(--bg-secondary) !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.5px !important;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    color: var(--text-primary) !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    font-size: 14px !important;
+    min-width: auto !important;
+    height: auto !important;
 }
 
 .fc-button:hover {
-    background: #8B1A1A !important;
-    transform: translateY(-2px);
+    background: var(--bg-tertiary) !important;
+    border-color: var(--border) !important;
+    color: var(--text-primary) !important;
+    transform: translateY(-1px);
 }
 
 .fc-button:disabled {
@@ -1210,10 +1372,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .fc-daygrid-event:hover {
-    transform: scale(1.08) translateZ(0);
+    transform: scale(1.05) translateZ(0);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), 0 0 20px rgba(178, 34, 34, 0.3);
-    animation: eventGlitch 0.4s ease;
     filter: brightness(1.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
 .fc-daygrid-event:hover::before {
@@ -1243,18 +1405,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .fc-col-header-cell {
-    background: var(--primary) !important;
-    color: var(--bg-secondary) !important;
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
     font-weight: 700 !important;
     padding: 10px !important;
-    font-family: 'Freckle Face', cursive !important;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
     text-transform: uppercase !important;
     letter-spacing: 1px !important;
+    border-bottom: 2px solid var(--border) !important;
 }
 
 .fc-daygrid-day-number {
     color: var(--text-primary);
     font-weight: 600;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
 }
 
 .fc-daygrid-day {
@@ -1275,6 +1439,7 @@ h1, h2, h3, h4, h5, h6 {
 .fc-daygrid-day-number {
     padding: 4px;
     font-weight: 600;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
 }
 
 .fc-daygrid-day-events {
@@ -1388,7 +1553,7 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--primary);
     margin-bottom: 20px;
     font-size: 1.8em;
-    font-family: 'Freckle Face', cursive;
+    font-family: 'Signika', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -1422,7 +1587,6 @@ h1, h2, h3, h4, h5, h6 {
 #modalBody a:hover {
     background: var(--primary);
     color: var(--bg-secondary);
-    animation: glitch 0.3s infinite;
 }
 
 /* List Modal Styles */
@@ -1505,7 +1669,7 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 4px;
     cursor: pointer;
     font-weight: 600;
-    font-family: 'Stack Sans Notch', sans-serif;
+    font-family: 'Signika', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     transition: all 0.3s ease;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1527,7 +1691,6 @@ h1, h2, h3, h4, h5, h6 {
     border-color: #8B1A1A;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(178, 34, 34, 0.3);
-    animation: glitch 0.3s infinite;
 }
 
 .export-btn:disabled {
@@ -1608,10 +1771,10 @@ h1, h2, h3, h4, h5, h6 {
 
 .footer {
     background: var(--bg-secondary);
-    border-top: 2px solid var(--border);
-    padding: 40px 0;
-    margin-top: 60px;
-    transition: all 0.5s ease;
+    border-top: 1px solid var(--border-light);
+    padding: 24px 0 20px;
+    margin-top: 40px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
 }
 
@@ -1632,17 +1795,39 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0 30px;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 30px;
+    gap: 20px;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.footer-logo-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .footer-section h3,
 .footer-section h4 {
-    font-family: 'Freckle Face', cursive;
+    font-family: 'Signika', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     color: var(--primary);
-    margin-bottom: 15px;
+    margin: 0;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    text-transform: none;
+    letter-spacing: -0.02em;
+}
+
+.racoon-tagline {
+    font-style: italic;
+    color: var(--text-tertiary);
+    font-size: 0.875rem;
+    margin-top: 8px;
 }
 
 .footer-section p {
@@ -1667,13 +1852,12 @@ h1, h2, h3, h4, h5, h6 {
     position: relative;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    font-family: 'Stack Sans Notch', sans-serif;
+    font-family: 'Signika', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .social-link:hover {
     background: var(--primary);
     color: var(--bg-secondary);
-    animation: glitch 0.3s infinite;
     transform: translateY(-2px);
 }
 
@@ -1705,76 +1889,89 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .events-section-title {
-    font-family: 'Stack Sans Notch', sans-serif;
-    font-size: 24px;
+    font-family: 'Signika', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 1.75rem;
     font-weight: 700;
     color: var(--text-primary);
     margin: 0;
     text-transform: none;
-    letter-spacing: 0;
+    letter-spacing: -0.02em;
 }
 
 .see-all-link {
     color: var(--primary);
     text-decoration: none;
     font-weight: 600;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    font-family: 'Stack Sans Notch', sans-serif;
+    font-size: 0.9375rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: -0.01em;
 }
 
 .see-all-link:hover {
+    color: var(--primary-hover);
     text-decoration: underline;
-    color: #8B1A1A;
 }
 
 .events-cards-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 24px;
-    margin-bottom: 20px;
+    margin-bottom: 32px;
 }
 
 .event-card {
     background: var(--bg-secondary);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid var(--border);
-    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     position: relative;
+    cursor: default;
 }
 
 .event-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    border-color: var(--primary);
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border);
 }
 
 .event-card.in-my-list {
-    border-color: var(--primary);
+    border-color: var(--border);
     border-width: 2px;
+}
+
+.event-card-image-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.2s ease;
+}
+
+.event-card-image-link:hover {
+    opacity: 0.9;
 }
 
 .event-card-image-container {
     position: relative;
     width: 100%;
-    height: 200px;
+    height: 240px;
     overflow: hidden;
-    background: var(--bg-primary);
+    background: var(--bg-tertiary);
 }
 
 .event-card-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .event-card:hover .event-card-image {
-    transform: scale(1.05);
+    transform: scale(1.08);
 }
 
 .event-card-checkbox {
@@ -1782,20 +1979,27 @@ h1, h2, h3, h4, h5, h6 {
     top: 12px;
     right: 12px;
     z-index: 10;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-radius: 50%;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
+    box-shadow: var(--shadow-md);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] .event-card-checkbox {
+    background: rgba(28, 28, 30, 0.9);
 }
 
 .event-card-checkbox:hover {
     background: rgba(255, 255, 255, 1);
-    transform: scale(1.1);
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg);
 }
 
 .event-card-checkbox input[type="checkbox"] {
@@ -1810,16 +2014,18 @@ h1, h2, h3, h4, h5, h6 {
     position: absolute;
     bottom: 12px;
     left: 12px;
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 20px;
-    font-size: 11px;
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.03em;
     color: white;
-    font-family: 'Stack Sans Notch', sans-serif;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    box-shadow: var(--shadow-md);
     z-index: 5;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .event-card-content {
@@ -1827,20 +2033,22 @@ h1, h2, h3, h4, h5, h6 {
     flex: 1;
     display: flex;
     flex-direction: column;
+    gap: 12px;
 }
 
 .event-card-title {
-    margin: 0 0 12px 0;
-    font-size: 18px;
+    margin: 0;
+    font-size: 1.125rem;
     font-weight: 700;
     line-height: 1.3;
-    font-family: 'Stack Sans Notch', sans-serif;
+    font-family: 'Signika', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: -0.01em;
 }
 
 .event-card-link {
     color: var(--text-primary);
     text-decoration: none;
-    transition: color 0.3s ease;
+    transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -1859,17 +2067,18 @@ h1, h2, h3, h4, h5, h6 {
 .event-card-detail-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-    font-size: 14px;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-size: 0.875rem;
     color: var(--text-secondary);
-    font-family: 'Stack Sans Notch', sans-serif;
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .event-card-detail-item i {
-    width: 16px;
-    color: var(--primary);
-    font-size: 12px;
+    width: 18px;
+    color: var(--text-tertiary);
+    font-size: 0.875rem;
+    flex-shrink: 0;
 }
 
 .event-card-detail-item span {
@@ -1890,44 +2099,45 @@ h1, h2, h3, h4, h5, h6 {
 
 .event-card-button {
     flex: 1;
-    padding: 10px 16px;
-    border-radius: 6px;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
     text-decoration: none;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 0.875rem;
     text-align: center;
-    transition: all 0.3s ease;
-    font-family: 'Stack Sans Notch', sans-serif;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     border: none;
     cursor: pointer;
     min-width: 100px;
+    letter-spacing: -0.01em;
 }
 
 .tickets-btn {
     background: var(--primary);
-    color: var(--bg-secondary);
+    color: #FFFFFF;
 }
 
 .tickets-btn:hover {
-    background: #8B1A1A;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(178, 34, 34, 0.3);
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
 .facebook-btn {
-    background: var(--bg-primary);
+    background: var(--bg-tertiary);
     color: var(--text-primary);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-light);
 }
 
 .facebook-btn:hover {
-    background: var(--border);
-    border-color: var(--primary);
-    color: var(--primary);
+    background: var(--border-light);
+    border-color: var(--border);
+    color: var(--text-primary);
 }
 
 .no-events-message {
@@ -1938,7 +2148,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .no-events-message p {
     font-size: 16px;
-    font-family: 'Stack Sans Notch', sans-serif;
+    font-family: 'Signika', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 /* Dark theme adjustments for grid */
@@ -1999,7 +2209,11 @@ h1, h2, h3, h4, h5, h6 {
     }
 
     .filters-container {
-        grid-template-columns: 1fr;
+        flex-direction: column;
+    }
+    
+    .filter-group {
+        min-width: 100%;
     }
     
     .filters-header {

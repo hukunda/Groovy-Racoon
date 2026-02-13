@@ -54,10 +54,27 @@ function applyTheme(theme) {
         if (themeToggle) themeToggle.setAttribute('title', 'Switch to dark theme');
     }
     
+    // Update logo based on theme
+    updateLogo(theme);
+    
     // Update FullCalendar theme if it exists
     if (typeof calendar !== 'undefined' && calendar) {
         updateCalendarTheme(theme);
     }
+}
+
+/**
+ * Update logo based on theme
+ */
+function updateLogo(theme) {
+    const logos = document.querySelectorAll('.logo, .footer-logo-img');
+    logos.forEach(logo => {
+        if (theme === THEME_DARK) {
+            logo.src = 'assets/logo-white.png';
+        } else {
+            logo.src = 'assets/logo-black.png';
+        }
+    });
 }
 
 /**
@@ -113,6 +130,9 @@ function initTheme() {
         const timeTheme = getTimeBasedTheme();
         applyTheme(timeTheme);
     }
+    
+    // Update logo on initial load
+    updateLogo(currentTheme);
     
     // Check theme every minute for auto mode
     setInterval(() => {
